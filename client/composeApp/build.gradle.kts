@@ -45,7 +45,7 @@ compose.desktop {
         mainClass = "app.nine.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Exe, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Nine"
             packageVersion = "1.0.0"
         }

@@ -1,0 +1,22 @@
+name: Windows installer
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Build .exe and .msi
+        working-directory: client
+        run: .\gradlew.bat :composeApp:packageExe :composeApp:packageMsi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Nine-windows
+          path: |
+            client/composeApp/build/compose/binaries/main/exe/*.exe
+            client/composeApp/build/compose/binaries/main/msi/*.msi
