@@ -23,7 +23,6 @@ import app.nine.domain.TimeSource
 import app.nine.presentation.ChatTab
 import app.nine.presentation.MessengerUiState
 import app.nine.presentation.emptyListMessage
-import app.nine.ui.components.AnonymityMask
 import app.nine.ui.components.GlassPanel
 import app.nine.ui.components.IconAction
 import app.nine.ui.components.NineIcons
@@ -51,13 +50,6 @@ fun ChatListPane(
 ) {
     val type = NineTheme.typography
     GlassPanel(modifier.width(ChatListWidth)) {
-        // Маска лежит под списком по центру внизу и видна, пока чатов мало.
-        AnonymityMask(
-            Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 48.dp)
-                .width(220.dp),
-        )
         Column(Modifier.fillMaxSize()) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 18.dp, top = 28.dp, bottom = 18.dp),

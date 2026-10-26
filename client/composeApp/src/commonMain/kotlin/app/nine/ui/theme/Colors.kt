@@ -43,9 +43,6 @@ object NineColors {
     /** Шапка и поле ввода лежат поверх переписки: фон почти непрозрачный, но сообщения под ним слегка просвечивают. */
     val FloatingBar = Color(0xE6121212)
     val Scrim = Color(0xB3000000)
-
-    val MaskFill = Color(0xFF1D6A40)
-    val MaskStroke = Color(0xFF7FDCA3)
 }
 
 /** Цвет собственных сообщений для выбранного в настройках варианта. */
