@@ -33,7 +33,7 @@ import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
 
 /** Ширина левой колонки со списком чатов. */
-val ChatListWidth = 360.dp
+val ChatListWidth = 390.dp
 
 /**
  * Левая колонка: заголовок, поиск, вкладки и список чатов.

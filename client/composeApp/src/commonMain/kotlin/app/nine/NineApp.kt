@@ -65,7 +65,7 @@ fun NineApp(repository: MessengerRepository, time: TimeSource = TimeSource.Syste
                         },
                         modifier = Modifier.weight(1f).fillMaxHeight(),
                     )
-                    if (showContactPane && selected != null) {
+                    if (showContactPane) {
                         ContactPane(
                             chat = selected,
                             bubbleColor = data.bubbleColor,

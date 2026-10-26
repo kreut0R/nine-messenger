@@ -25,7 +25,7 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
-        val desktopMain by getting {
+        named("desktopMain") {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 // Нужен, чтобы корутины работали на потоке интерфейса Swing/Skia.
