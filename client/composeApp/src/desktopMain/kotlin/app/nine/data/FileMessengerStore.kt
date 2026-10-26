@@ -48,7 +48,7 @@ class FileMessengerStore(directory: File) : MessengerStore {
             moveReplacing(temp, file)
         } catch (error: IOException) {
             // Падать из-за диска хуже, чем не сохранить: сообщение остаётся на экране. Ошибку видно в консоли.
-            System.err.println("Nine: не удалось сохранить данные в $file: ${error.message}")
+            System.err.println("Nine: could not save data to $file: ${error.message}")
         }
     }
 
@@ -57,9 +57,9 @@ class FileMessengerStore(directory: File) : MessengerStore {
         val broken = File(file.parentFile, "${file.name}.broken")
         try {
             Files.move(file.toPath(), broken.toPath(), StandardCopyOption.REPLACE_EXISTING)
-            System.err.println("Nine: файл данных не читается, он сохранён как $broken, начинаем с пустого состояния.")
+            System.err.println("Nine: data file is unreadable, kept as $broken, starting with an empty state.")
         } catch (error: IOException) {
-            System.err.println("Nine: файл данных не читается и не удалось его отложить: ${error.message}")
+            System.err.println("Nine: data file is unreadable and could not be set aside: ${error.message}")
         }
     }
 

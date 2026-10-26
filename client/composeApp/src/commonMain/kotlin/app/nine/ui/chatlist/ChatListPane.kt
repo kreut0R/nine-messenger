@@ -56,11 +56,11 @@ fun ChatListPane(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                BasicText("Чаты", style = type.screenTitle, modifier = Modifier.weight(1f))
-                IconAction(NineIcons.Search, "Поиск по чатам", ui::toggleChatSearch, shape = CircleShape, size = 36.dp)
+                BasicText("Chats", style = type.screenTitle, modifier = Modifier.weight(1f))
+                IconAction(NineIcons.Search, "Search chats", ui::toggleChatSearch, shape = CircleShape, size = 36.dp)
                 IconAction(
                     icon = NineIcons.PlusCircle,
-                    description = "Новый чат",
+                    description = "New chat",
                     onClick = onNewChat,
                     tint = NineColors.TextPrimary,
                     shape = CircleShape,
@@ -71,7 +71,7 @@ fun ChatListPane(
                 SearchField(
                     value = ui.chatSearch,
                     onValueChange = { ui.chatSearch = it },
-                    placeholder = "Поиск",
+                    placeholder = "Search",
                     modifier = Modifier.padding(start = 22.dp, end = 22.dp, bottom = 14.dp),
                 )
             }

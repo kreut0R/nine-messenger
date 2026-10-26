@@ -79,8 +79,8 @@ fun NewChatDialog(onCreate: (String) -> Unit, onDismiss: () -> Unit) {
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
-            BasicText("Новый чат", style = type.profileName)
-            BasicText("Как назвать собеседника? Имя видно только вам.", style = type.chatPreview)
+            BasicText("New chat", style = type.profileName)
+            BasicText("What should we call them? Only you can see this name.", style = type.chatPreview)
             BasicTextField(
                 value = name,
                 onValueChange = { name = it },
@@ -107,14 +107,14 @@ fun NewChatDialog(onCreate: (String) -> Unit, onDismiss: () -> Unit) {
                             .padding(horizontal = 14.dp),
                         contentAlignment = Alignment.CenterStart,
                     ) {
-                        if (name.isEmpty()) BasicText("Имя", style = type.hint)
+                        if (name.isEmpty()) BasicText("Name", style = type.hint)
                         inner()
                     }
                 },
             )
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)) {
-                DialogButton("Отмена", primary = false, enabled = true, onClick = onDismiss)
-                DialogButton("Создать", primary = true, enabled = canCreate, onClick = { submit() })
+                DialogButton("Cancel", primary = false, enabled = true, onClick = onDismiss)
+                DialogButton("Create", primary = true, enabled = canCreate, onClick = { submit() })
             }
         }
     }

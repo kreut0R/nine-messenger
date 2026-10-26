@@ -69,8 +69,8 @@ fun ContactPane(
                 BasicText(chat.title, style = type.profileName, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 BasicText(chat.id.displayCode, style = type.code)
             }
-            SearchField(messageSearch, onMessageSearchChange, placeholder = "Поиск в переписке")
-            Section("Цвет сообщений") {
+            SearchField(messageSearch, onMessageSearchChange, placeholder = "Search in chat")
+            Section("Message color") {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     BubbleColor.entries.forEach { color ->
                         Swatch(color, selected = color == bubbleColor, onClick = { onBubbleColorChange(color) })
@@ -122,7 +122,7 @@ private fun ArchiveButton(archived: Boolean, onClick: () -> Unit) {
         contentAlignment = Alignment.Center,
     ) {
         BasicText(
-            text = if (archived) "Вернуть из архива" else "Перенести в архив",
+            text = if (archived) "Unarchive" else "Archive chat",
             style = NineTheme.typography.button.copy(color = NineColors.TextSecondary),
         )
     }

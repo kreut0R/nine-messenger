@@ -47,7 +47,7 @@ class NineTypography(private val family: FontFamily) {
     val avatarLetter = style(16f, FontWeight.SemiBold).copy(color = androidx.compose.ui.graphics.Color.White)
 }
 
-private val LocalNineTypography = compositionLocalOf<NineTypography> { error("NineTheme не подключена") }
+private val LocalNineTypography = compositionLocalOf<NineTypography> { error("NineTheme is not provided") }
 
 /** Доступ к стилям из любого места внутри [NineTheme]. */
 object NineTheme {

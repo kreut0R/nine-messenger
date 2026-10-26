@@ -4,9 +4,9 @@ import app.nine.domain.Chat
 import app.nine.domain.Message
 
 enum class ChatTab(val title: String) {
-    All("Все"),
-    Unread("Непрочитанные"),
-    Archive("Архив"),
+    All("All"),
+    Unread("Unread"),
+    Archive("Archive"),
 }
 
 /**
@@ -35,9 +35,9 @@ fun filterMessages(messages: List<Message>, query: String): List<Message> {
 
 /** Что написать в списке, когда показывать нечего. Текст зависит от того, почему список пуст. */
 fun emptyListMessage(totalChats: Int, tab: ChatTab, query: String): String = when {
-    totalChats == 0 -> "Чатов пока нет.\nНажмите «+», чтобы создать первый."
-    query.isNotBlank() -> "Ничего не найдено"
-    tab == ChatTab.Unread -> "Непрочитанных нет"
-    tab == ChatTab.Archive -> "Архив пуст"
-    else -> "Здесь пока пусто"
+    totalChats == 0 -> "No chats yet.\nClick “+” to start your first one."
+    query.isNotBlank() -> "Nothing found"
+    tab == ChatTab.Unread -> "No unread chats"
+    tab == ChatTab.Archive -> "Archive is empty"
+    else -> "Nothing here yet"
 }

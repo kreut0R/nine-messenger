@@ -78,7 +78,7 @@ fun ConversationPane(
 ) {
     GlassPanel(modifier) {
         if (chat == null) {
-            CenteredHint("Выберите чат слева\nили создайте новый")
+            CenteredHint("Select a chat on the left\nor start a new one")
         } else {
             // key пересоздаёт всё внутри при смене чата: прокрутка и фокус начинаются заново.
             androidx.compose.runtime.key(chat.id) {
@@ -104,7 +104,7 @@ private fun OpenConversation(
     Box(Modifier.fillMaxSize()) {
         MessageList(timeline, chat, bubbleColor.color, zone, time)
         if (timeline.isEmpty()) {
-            CenteredHint(if (chat.messages.isEmpty()) "Напишите первое сообщение" else "Ничего не найдено")
+            CenteredHint(if (chat.messages.isEmpty()) "Write the first message" else "Nothing found")
         }
         ConversationHeader(
             chat = chat,
@@ -254,11 +254,11 @@ private fun ConversationHeader(
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             BasicText(chat.title, style = type.chatName, maxLines = 1)
             // Статуса «в сети» пока нет: он появится вместе с сервером. Сейчас честно пишем, где лежит переписка.
-            BasicText("Переписка хранится только на этом устройстве", style = type.time, maxLines = 1)
+            BasicText("Messages are stored only on this device", style = type.time, maxLines = 1)
         }
         IconAction(
             icon = NineIcons.SidePanel,
-            description = if (contactPaneOpen) "Скрыть панель контакта" else "Показать панель контакта",
+            description = if (contactPaneOpen) "Hide contact panel" else "Show contact panel",
             onClick = onToggleContactPane,
             tint = if (contactPaneOpen) NineColors.TextPrimary else NineColors.TextSecondary,
         )

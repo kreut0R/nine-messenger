@@ -81,10 +81,10 @@ class ChatFilterTest {
 
     @Test
     fun emptyMessageExplainsWhyListIsEmpty() {
-        assertEquals("Чатов пока нет.\nНажмите «+», чтобы создать первый.", emptyListMessage(0, ChatTab.All, ""))
-        assertEquals("Ничего не найдено", emptyListMessage(3, ChatTab.All, "яяя"))
-        assertEquals("Непрочитанных нет", emptyListMessage(3, ChatTab.Unread, ""))
-        assertEquals("Архив пуст", emptyListMessage(3, ChatTab.Archive, ""))
+        assertEquals("No chats yet.\nClick “+” to start your first one.", emptyListMessage(0, ChatTab.All, ""))
+        assertEquals("Nothing found", emptyListMessage(3, ChatTab.All, "яяя"))
+        assertEquals("No unread chats", emptyListMessage(3, ChatTab.Unread, ""))
+        assertEquals("Archive is empty", emptyListMessage(3, ChatTab.Archive, ""))
     }
 
     private fun message(id: String, text: String) = Message(id, Author.Me, text, sentAtMillis = 0)

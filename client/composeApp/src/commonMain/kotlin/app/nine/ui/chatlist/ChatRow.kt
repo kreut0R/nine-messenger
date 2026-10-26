@@ -83,7 +83,7 @@ fun ChatRow(chat: Chat, selected: Boolean, time: TimeSource, onClick: () -> Unit
                             )
                         }
                         BasicText(
-                            text = last?.text?.replace('\n', ' ') ?: "Нет сообщений",
+                            text = last?.text?.replace('\n', ' ') ?: "No messages",
                             style = if (last == null) type.time else type.chatPreview,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,

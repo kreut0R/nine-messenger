@@ -86,7 +86,7 @@ fun Composer(
                 },
             decorationBox = { inner ->
                 Box(Modifier.heightIn(min = 40.dp), contentAlignment = Alignment.CenterStart) {
-                    if (draft.isEmpty()) BasicText("Сообщение", style = type.hint.copy(fontSize = type.messageText.fontSize))
+                    if (draft.isEmpty()) BasicText("Message", style = type.hint.copy(fontSize = type.messageText.fontSize))
                     inner()
                 }
             },
@@ -109,6 +109,6 @@ private fun SendButton(enabled: Boolean, onClick: () -> Unit) {
             ),
         contentAlignment = Alignment.Center,
     ) {
-        NineIcon(NineIcons.Send, tint = OnSendButton, contentDescription = "Отправить")
+        NineIcon(NineIcons.Send, tint = OnSendButton, contentDescription = "Send")
     }
 }

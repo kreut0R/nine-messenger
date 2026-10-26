@@ -58,9 +58,9 @@ val BubbleColor.color: Color
 /** Название цвета для озвучивания экранным диктором и подсказок. */
 val BubbleColor.label: String
     get() = when (this) {
-        BubbleColor.Forest -> "Лесной"
-        BubbleColor.Emerald -> "Изумрудный"
-        BubbleColor.Olive -> "Оливковый"
-        BubbleColor.Moss -> "Мшистый"
-        BubbleColor.Graphite -> "Графитовый"
+        BubbleColor.Forest -> "Forest"
+        BubbleColor.Emerald -> "Emerald"
+        BubbleColor.Olive -> "Olive"
+        BubbleColor.Moss -> "Moss"
+        BubbleColor.Graphite -> "Graphite"
     }
