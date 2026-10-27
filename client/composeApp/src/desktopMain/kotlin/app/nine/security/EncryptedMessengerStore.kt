@@ -17,8 +17,19 @@ internal class EncryptedMessengerStore(private val file: File, private val maste
         encodeDefaults = true
     }
 
+    /**
+     * После блокировки ключ в памяти затёрт нулями. Если бы запись всё же дошла сюда (скажем, нажатие клавиши в тот же миг,
+     * когда сработала автоблокировка), файл оказался бы зашифрован нулевым ключом, а настоящий ключ его уже не открыл бы.
+     */
+    @Volatile
+    private var closed = false
+
+    fun close() {
+        closed = true
+    }
+
     override fun load(): MessengerData {
-        if (!file.exists()) return MessengerData()
+        if (closed || !file.exists()) return MessengerData()
         return try {
             val plain = Crypto.open(masterKey, file.readBytes(), Purpose)
             if (plain == null) {
@@ -37,6 +48,7 @@ internal class EncryptedMessengerStore(private val file: File, private val maste
     }
 
     override fun save(data: MessengerData) {
+        if (closed) return
         try {
             val plain = json.encodeToString(MessengerData.serializer(), data).toByteArray()
             writeFileAtomically(file, Crypto.seal(masterKey, plain, Purpose))

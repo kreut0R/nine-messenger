@@ -31,6 +31,7 @@ class NineTypography(private val family: FontFamily) {
     val screenTitle = style(32f, FontWeight.Bold, lineHeight = 38f, spacing = -0.8f)
     val profileName = style(20f, FontWeight.Bold)
     val chatName = style(16f, FontWeight.SemiBold)
+    val rowTitle = style(15f, FontWeight.Medium)
     val chatPreview = style(14f, FontWeight.Normal).copy(color = NineColors.TextSecondary)
     val time = style(13f, FontWeight.Normal).copy(color = NineColors.TextTertiary)
     val messageText = style(15f, FontWeight.Normal, lineHeight = 22.5f)

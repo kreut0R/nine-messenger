@@ -237,6 +237,97 @@ class FileVaultTest {
     }
 
     @Test
+    fun writeAfterLockDoesNotTouchTheEncryptedFile() {
+        val session = vault().createAccount(code)
+        session.store.save(chats())
+        val before = File(directory, "messenger.enc").readBytes()
+        session.lock()
+
+        // Автоблокировка может сработать между нажатием клавиши и её обработкой: запись нулевым ключом испортила бы файл.
+        session.store.save(chats("Другое имя"))
+        session.store.load()
+
+        assertTrue(before.contentEquals(File(directory, "messenger.enc").readBytes()))
+        assertFalse(File(directory, "messenger.enc.broken").exists())
+        assertEquals(chats(), unlocked(vault().unlock(code)).store.load())
+    }
+
+    @Test
+    fun newCodeOpensTheAccountAndTheOldOneNoLonger() {
+        val session = vault().createAccount(code)
+        session.store.save(chats())
+
+        assertEquals(ChangeCodeResult.Changed, session.changeAccessCode(code, "новый код 2027"))
+        session.lock()
+
+        assertEquals(UnlockResult.WrongCode(attemptsBeforePause = 4), vault().unlock(code))
+        val reopened = unlocked(vault().unlock("новый код 2027"))
+        assertEquals(session.accountId, reopened.accountId)
+        assertEquals(chats(), reopened.store.load())
+    }
+
+    @Test
+    fun wrongCurrentCodeChangesNothingAndCountsAsAFailedAttempt() {
+        val session = vault().createAccount(code)
+
+        assertEquals(ChangeCodeResult.WrongCode(attemptsBeforePause = 4), session.changeAccessCode("не тот код", "новый код 2027"))
+        session.lock()
+
+        assertIs<UnlockResult.Unlocked>(vault().unlock(code))
+    }
+
+    @Test
+    fun changingTheCodeIsPausedAfterTooManyWrongOnes() {
+        val session = vault().createAccount(code)
+        repeat(Lockout.FreeAttempts - 1) { session.changeAccessCode("не тот код", "новый код 2027") }
+
+        val paused = assertIs<ChangeCodeResult.Paused>(session.changeAccessCode("не тот код", "новый код 2027"))
+        assertEquals(time.now + 30_000, paused.untilMillis)
+        // Пока идёт пауза, даже верный текущий код не принимается.
+        assertIs<ChangeCodeResult.Paused>(session.changeAccessCode(code, "новый код 2027"))
+        assertIs<UnlockResult.Paused>(vault().unlock(code))
+    }
+
+    @Test
+    fun successfulChangeResetsTheFailedAttempts() {
+        val session = vault().createAccount(code)
+        repeat(3) { session.changeAccessCode("не тот код", "новый код 2027") }
+
+        assertEquals(ChangeCodeResult.Changed, session.changeAccessCode(code, "новый код 2027"))
+        session.lock()
+
+        assertEquals(UnlockResult.WrongCode(attemptsBeforePause = 4), vault().unlock("не тот код"))
+    }
+
+    @Test
+    fun shortNewCodeIsRefusedAndTheOldOneKeepsWorking() {
+        val session = vault().createAccount(code)
+
+        assertFailsWith<IllegalArgumentException> { session.changeAccessCode(code, "1234567") }
+        session.lock()
+
+        assertIs<UnlockResult.Unlocked>(vault().unlock(code))
+    }
+
+    @Test
+    fun changingTheCodeKeepsTheOtherFilesAndWritesNoCodeToDisk() {
+        val session = vault().createAccount(code)
+        session.store.save(chats())
+        val identityBefore = File(directory, "identity.enc").readBytes()
+        val chatsBefore = File(directory, "messenger.enc").readBytes()
+
+        session.changeAccessCode(code, "новый код 2027")
+
+        // Меняется только обёртка главного ключа: остальные файлы остаются теми же.
+        assertTrue(identityBefore.contentEquals(File(directory, "identity.enc").readBytes()))
+        assertTrue(chatsBefore.contentEquals(File(directory, "messenger.enc").readBytes()))
+        directory.listFiles()!!.forEach { file ->
+            val text = file.readBytes().toString(Charsets.ISO_8859_1) + file.readText()
+            assertFalse("новый код 2027" in text, "${file.name} содержит новый код")
+        }
+    }
+
+    @Test
     fun productionCostIsStoredNextToTheData() {
         FileVault(directory, time).createAccount(code).lock()
 

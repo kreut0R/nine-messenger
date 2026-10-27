@@ -2,12 +2,10 @@ package app.nine.ui.dialog
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -33,10 +31,10 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import app.nine.ui.components.ActionButton
+import app.nine.ui.components.Modal
 import app.nine.ui.components.PanelShape
 import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
@@ -54,27 +52,13 @@ fun NewChatDialog(onCreate: (String) -> Unit, onDismiss: () -> Unit) {
     val canCreate = name.isNotBlank()
     val submit = { if (canCreate) onCreate(name.trim()) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(NineColors.Scrim)
-            // Затемнение ловит все касания, иначе они дошли бы до панелей под окном.
-            .pointerInput(Unit) { detectTapGestures { onDismiss() } }
-            .onPreviewKeyEvent { event ->
-                val escape = event.key == Key.Escape && event.type == KeyEventType.KeyDown
-                if (escape) onDismiss()
-                escape
-            },
-        contentAlignment = Alignment.Center,
-    ) {
+    Modal(onDismiss, focusOnOpen = false) {
         Column(
             modifier = Modifier
                 .width(380.dp)
                 .clip(PanelShape)
                 .background(NineColors.Panel)
                 .border(1.dp, NineColors.Rim, PanelShape)
-                // Клик внутри окна не должен закрывать его через затемнение.
-                .pointerInput(Unit) { detectTapGestures { } }
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {

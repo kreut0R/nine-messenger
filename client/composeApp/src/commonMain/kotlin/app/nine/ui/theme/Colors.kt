@@ -44,6 +44,9 @@ object NineColors {
     val OwnBubbleBorder = Color(0xFF96EBAF).copy(alpha = 0.14f)
     val OnOwnBubble = Color(0xFFF2FBF4)
 
+    /** Всплывающее меню чуть светлее панелей, на которых оно лежит. */
+    val Menu = Color(0xFF171717)
+
     /** Шапка и поле ввода лежат поверх переписки: фон почти непрозрачный, но сообщения под ним слегка просвечивают. */
     val FloatingBar = Color(0xE6121212)
     val Scrim = Color(0xB3000000)

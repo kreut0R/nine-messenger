@@ -14,13 +14,15 @@ import java.awt.Dimension
 fun main() = application {
     val vault = remember { FileVault(appDataDirectory()) }
     val filePicker = remember { AwtFilePicker() }
+    val clipboard = remember { AwtSystemClipboard() }
+    val windowState = rememberWindowState(size = DpSize(1440.dp, 810.dp))
     Window(
         onCloseRequest = ::exitApplication,
         title = "Nine",
-        state = rememberWindowState(size = DpSize(1440.dp, 810.dp)),
+        state = windowState,
     ) {
         // Ниже этих размеров три колонки уже не помещаются.
         window.minimumSize = Dimension(900, 600)
-        NineRoot(vault, filePicker)
+        NineRoot(vault, filePicker, clipboard, windowHidden = { windowState.isMinimized })
     }
 }

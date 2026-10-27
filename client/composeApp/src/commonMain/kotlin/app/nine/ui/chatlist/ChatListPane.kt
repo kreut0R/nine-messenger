@@ -39,6 +39,7 @@ val ChatListWidth = 360.dp
  * Левая колонка: заголовок, поиск, вкладки и список чатов.
  * @param chats уже отфильтрованные и отсортированные чаты для текущей вкладки
  * @param totalChats сколько чатов вообще есть, нужно только для текста пустого списка
+ * @param profileMenu кнопка профиля с её меню: что в нём лежит, список чатов не знает
  */
 @Composable
 fun ChatListPane(
@@ -47,7 +48,7 @@ fun ChatListPane(
     ui: MessengerUiState,
     time: TimeSource,
     onNewChat: () -> Unit,
-    onOpenProfile: () -> Unit,
+    profileMenu: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val type = NineTheme.typography
@@ -66,7 +67,7 @@ fun ChatListPane(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 BasicText("Чаты", style = type.screenTitle, modifier = Modifier.weight(1f))
-                IconAction(NineIcons.Person, "Профиль", onOpenProfile, shape = CircleShape, size = 36.dp)
+                profileMenu()
                 IconAction(NineIcons.Search, "Поиск по чатам", ui::toggleChatSearch, shape = CircleShape, size = 36.dp)
                 IconAction(
                     icon = NineIcons.PlusCircle,

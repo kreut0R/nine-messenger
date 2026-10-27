@@ -1,6 +1,7 @@
 package app.nine.data
 
 import app.nine.domain.Author
+import app.nine.domain.AutoLock
 import app.nine.domain.BubbleColor
 import app.nine.domain.Chat
 import app.nine.domain.ChatId
@@ -62,6 +63,14 @@ class MessengerRepository(
 
     fun setBubbleColor(color: BubbleColor) {
         change { it.copy(bubbleColor = color) }
+    }
+
+    fun setAutoLock(autoLock: AutoLock) {
+        change { it.copy(settings = it.settings.copy(autoLock = autoLock)) }
+    }
+
+    fun setClearClipboard(clear: Boolean) {
+        change { it.copy(settings = it.settings.copy(clearClipboard = clear)) }
     }
 
     private fun changeChat(chatId: ChatId, transform: (Chat) -> Chat): Boolean {

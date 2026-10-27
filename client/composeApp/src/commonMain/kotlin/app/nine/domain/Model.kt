@@ -52,6 +52,17 @@ data class Chat(
 /** Цвет собственных сообщений. Сам цвет задаётся в слое интерфейса, здесь хранится только выбор. */
 enum class BubbleColor { Forest, Emerald, Olive, Moss, Graphite }
 
+/** Когда приложение блокируется само. Правила проверки лежат в `security/AutoLockPolicy.kt`. */
+enum class AutoLock { OnMinimize, OneMinute, FiveMinutes, FifteenMinutes, Never }
+
+/** Настройки, которые меняет человек. Лежат в том же зашифрованном файле, что и переписка. */
+@Serializable
+data class AppSettings(
+    val autoLock: AutoLock = AutoLock.FiveMinutes,
+    /** Убирать из буфера обмена то, что скопировано из Nine, через полминуты. */
+    val clearClipboard: Boolean = true,
+)
+
 /** Всё, что приложение хранит на устройстве. */
 @Serializable
 data class MessengerData(
@@ -59,4 +70,5 @@ data class MessengerData(
     val version: Int = 1,
     val chats: List<Chat> = emptyList(),
     val bubbleColor: BubbleColor = BubbleColor.Forest,
+    val settings: AppSettings = AppSettings(),
 )

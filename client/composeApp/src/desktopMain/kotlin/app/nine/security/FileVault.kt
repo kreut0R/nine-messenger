@@ -44,29 +44,40 @@ class FileVault(
     }
 
     override fun unlock(code: String): UnlockResult {
-        val record = readRecord() ?: return UnlockResult.Damaged
-        val now = time.nowMillis()
-        if (now < record.pausedUntilMillis) return UnlockResult.Paused(record.pausedUntilMillis)
+        val passed = when (val check = check(code)) {
+            is Check.Refused -> return check.result
+            is Check.Passed -> check
+        }
+        val seed = try {
+            Crypto.open(passed.masterKey, identityFile.readBytes(), IdentityPurpose)
+        } catch (error: IOException) {
+            null
+        } ?: return UnlockResult.Damaged
+        writeRecord(passed.record.copy(failures = 0, pausedUntilMillis = 0))
+        val store = EncryptedMessengerStore(dataFile, passed.masterKey)
+        return UnlockResult.Unlocked(DeviceSession(Identity(seed), passed.masterKey, store, passed.record.cost))
+    }
 
-        // Неудачу записываем до проверки: иначе можно выключить приложение посреди проверки и перебирать код без лимита.
+    /**
+     * Проверяет код с учётом лимита попыток и возвращает главный ключ или причину отказа.
+     * Неудачу записываем до проверки: иначе можно выключить приложение посреди проверки и перебирать код без лимита.
+     */
+    private fun check(code: String): Check {
+        val record = readRecord() ?: return Check.Refused(UnlockResult.Damaged)
+        val now = time.nowMillis()
+        if (now < record.pausedUntilMillis) return Check.Refused(UnlockResult.Paused(record.pausedUntilMillis))
+
         val failures = record.failures + 1
         writeRecord(record.copy(failures = failures, pausedUntilMillis = now + Lockout.pauseAfter(failures)))
 
         val codeKey = Crypto.deriveKey(code, decode(record.salt), record.cost)
         val masterKey = Crypto.open(codeKey, decode(record.wrappedKey), MasterKeyPurpose)
         codeKey.fill(0)
-        if (masterKey == null) {
-            val pause = Lockout.pauseAfter(failures)
-            return if (pause > 0) UnlockResult.Paused(now + pause) else UnlockResult.WrongCode(Lockout.FreeAttempts - failures)
-        }
+        if (masterKey != null) return Check.Passed(masterKey, record)
 
-        val seed = try {
-            Crypto.open(masterKey, identityFile.readBytes(), IdentityPurpose)
-        } catch (error: IOException) {
-            null
-        } ?: return UnlockResult.Damaged
-        writeRecord(record.copy(failures = 0, pausedUntilMillis = 0))
-        return UnlockResult.Unlocked(DeviceSession(Identity(seed), masterKey, EncryptedMessengerStore(dataFile, masterKey), record.cost))
+        val pause = Lockout.pauseAfter(failures)
+        val refusal = if (pause > 0) UnlockResult.Paused(now + pause) else UnlockResult.WrongCode(Lockout.FreeAttempts - failures)
+        return Check.Refused(refusal)
     }
 
     override fun restoreAccount(backup: ByteArray, backupPassword: String, code: String): RestoreResult {
@@ -149,6 +160,53 @@ class FileVault(
         file.delete()
     }
 
+    private sealed interface Check {
+        class Passed(val masterKey: ByteArray, val record: VaultRecord) : Check
+        class Refused(val result: UnlockResult) : Check
+    }
+
+    private inner class DeviceSession(
+        private val identity: Identity,
+        private val masterKey: ByteArray,
+        override val store: EncryptedMessengerStore,
+        private val backupCost: Argon2Cost,
+    ) : Session {
+        override val accountId: AccountId = identity.accountId
+
+        override fun exportKeyBackup(password: String): ByteArray = KeyBackup.create(identity, password, backupCost)
+
+        override fun changeAccessCode(current: String, newCode: String): ChangeCodeResult {
+            require(isAcceptableAccessCode(newCode)) { "Код доступа короче $MinAccessCodeLength символов" }
+            val passed = when (val check = check(current)) {
+                is Check.Refused -> return when (val refusal = check.result) {
+                    is UnlockResult.WrongCode -> ChangeCodeResult.WrongCode(refusal.attemptsBeforePause)
+                    is UnlockResult.Paused -> ChangeCodeResult.Paused(refusal.untilMillis)
+                    else -> ChangeCodeResult.Damaged
+                }
+                is Check.Passed -> check
+            }
+            val salt = Crypto.randomBytes(Crypto.SaltSize)
+            val codeKey = Crypto.deriveKey(newCode, salt, cost)
+            // Запись заменяется целиком одним атомарным действием: до него действует старый код, после него новый.
+            writeRecord(
+                VaultRecord(
+                    cost = cost,
+                    salt = encode(salt),
+                    wrappedKey = encode(Crypto.seal(codeKey, passed.masterKey, MasterKeyPurpose)),
+                ),
+            )
+            codeKey.fill(0)
+            passed.masterKey.fill(0)
+            return ChangeCodeResult.Changed
+        }
+
+        override fun lock() {
+            store.close()
+            masterKey.fill(0)
+            identity.seed.fill(0)
+        }
+    }
+
     private companion object {
         const val MasterKeyPurpose = "nine:master-key"
         const val IdentityPurpose = "nine:identity"
@@ -167,19 +225,3 @@ private data class VaultRecord(
     val failures: Int = 0,
     val pausedUntilMillis: Long = 0,
 )
-
-private class DeviceSession(
-    private val identity: Identity,
-    private val masterKey: ByteArray,
-    override val store: MessengerStore,
-    private val cost: Argon2Cost,
-) : Session {
-    override val accountId: AccountId = identity.accountId
-
-    override fun exportKeyBackup(password: String): ByteArray = KeyBackup.create(identity, password, cost)
-
-    override fun lock() {
-        masterKey.fill(0)
-        identity.seed.fill(0)
-    }
-}

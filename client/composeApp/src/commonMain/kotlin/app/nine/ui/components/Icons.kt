@@ -54,6 +54,24 @@ object NineIcons {
         "M16 8a4 4 0 1 1 -8 0a4 4 0 1 1 8 0",
         "M4.5 20c.9-3.4 3.7-5.2 7.5-5.2s6.6 1.8 7.5 5.2",
     )
+    val Close = lineIcon("Close", "M6 6l12 12M18 6L6 18")
+    val Sliders = lineIcon(
+        "Sliders",
+        "M4 7h7M17 7h3M4 17h3M13 17h7",
+        "M17 7a2 2 0 1 1 -4 0a2 2 0 1 1 4 0",
+        "M13 17a2 2 0 1 1 -4 0a2 2 0 1 1 4 0",
+    )
+    val Lock = lineIcon(
+        "Lock",
+        "M6.5 10.5h11a1.5 1.5 0 0 1 1.5 1.5v6.5a1.5 1.5 0 0 1 -1.5 1.5h-11a1.5 1.5 0 0 1 -1.5 -1.5V12a1.5 1.5 0 0 1 1.5 -1.5z",
+        "M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5",
+    )
+    val SignOut = lineIcon(
+        "SignOut",
+        "M10 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19H10",
+        "M15 8l4 4l-4 4M19 12H9",
+    )
+    val Shield = lineIcon("Shield", "M12 3.5l7 2.5v5.5c0 4.2 -2.9 7.4 -7 9c-4.1 -1.6 -7 -4.8 -7 -9V6z")
 }
 
 private fun lineIcon(name: String, vararg paths: String): ImageVector =

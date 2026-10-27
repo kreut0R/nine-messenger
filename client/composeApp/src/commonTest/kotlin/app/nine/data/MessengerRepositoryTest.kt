@@ -1,6 +1,7 @@
 package app.nine.data
 
 import app.nine.domain.Author
+import app.nine.domain.AutoLock
 import app.nine.domain.BubbleColor
 import app.nine.domain.ChatId
 import app.nine.domain.Delivery
@@ -134,5 +135,37 @@ class MessengerRepositoryTest {
         repository.setBubbleColor(BubbleColor.Graphite)
 
         assertEquals(BubbleColor.Graphite, repository.data.value.bubbleColor)
+    }
+
+    @Test
+    fun settingsStartWithSafeDefaults() {
+        val settings = repository.data.value.settings
+
+        assertEquals(AutoLock.FiveMinutes, settings.autoLock)
+        assertTrue(settings.clearClipboard)
+    }
+
+    @Test
+    fun settingsChangesAreSavedAndKeepTheChats() {
+        repository.createChat("Лис")
+        val saves = store.saves
+
+        repository.setAutoLock(AutoLock.OnMinimize)
+        repository.setClearClipboard(false)
+
+        assertEquals(saves + 2, store.saves)
+        assertEquals(AutoLock.OnMinimize, store.stored.settings.autoLock)
+        assertFalse(store.stored.settings.clearClipboard)
+        assertEquals("Лис", store.stored.chats.single().title)
+    }
+
+    @Test
+    fun repeatingTheSameSettingDoesNotWriteAgain() {
+        repository.setAutoLock(AutoLock.Never)
+        val saves = store.saves
+
+        repository.setAutoLock(AutoLock.Never)
+
+        assertEquals(saves, store.saves)
     }
 }
