@@ -6,4 +6,11 @@
 
 > NOTE: The project is not ready for use.
 
+**Our priorities**:
+Project is designed to be 100% cross-platform.
+
+On client side we use Kotlin with framework Compose Multiplatform.
+
+On server side we use Go, due to it’s simplicity, safety, and speed.
+
 That's everything we know.
