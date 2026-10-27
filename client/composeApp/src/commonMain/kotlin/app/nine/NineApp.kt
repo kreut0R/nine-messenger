@@ -56,6 +56,7 @@ fun NineApp(
     filePicker: FilePicker,
     clipboard: SystemClipboard,
     onLock: () -> Unit,
+    onPanic: () -> Unit,
     onErase: () -> Unit,
     time: TimeSource = TimeSource.System,
 ) {
@@ -85,6 +86,7 @@ fun NineApp(
                 time = time,
                 onAutoLockChange = repository::setAutoLock,
                 onClearClipboardChange = repository::setClearClipboard,
+                onPanicButtonChange = repository::setPanicButton,
                 onDisplayNameChange = repository::setDisplayName,
                 onCopy = { text ->
                     scope.launch {
@@ -105,6 +107,8 @@ fun NineApp(
                             ui = ui,
                             time = time,
                             onNewChat = { ui.newChatDialogOpen = true },
+                            panicButton = data.settings.panicButton,
+                            onPanic = onPanic,
                             profileMenu = {
                                 ProfileMenuButton(
                                     displayName = data.displayName,

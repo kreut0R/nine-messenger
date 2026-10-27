@@ -74,6 +74,10 @@ class MessengerRepository(
         change { it.copy(settings = it.settings.copy(clearClipboard = clear)) }
     }
 
+    fun setPanicButton(enabled: Boolean) {
+        change { it.copy(settings = it.settings.copy(panicButton = enabled)) }
+    }
+
     /** Leading and trailing whitespace is trimmed, an overlong name is shortened. A blank name means no name is set. */
     fun setDisplayName(name: String) {
         val clean = name.trim().take(MaxDisplayNameLength).trimEnd()

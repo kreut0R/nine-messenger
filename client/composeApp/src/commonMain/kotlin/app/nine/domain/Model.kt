@@ -61,6 +61,8 @@ data class AppSettings(
     val autoLock: AutoLock = AutoLock.FiveMinutes,
     /** Remove what was copied from Nine from the clipboard after half a minute. */
     val clearClipboard: Boolean = true,
+    /** Show the panic button and turn on its shortcut: it locks the app at once and minimizes the window. */
+    val panicButton: Boolean = false,
 )
 
 /** Everything the app stores on the device. */

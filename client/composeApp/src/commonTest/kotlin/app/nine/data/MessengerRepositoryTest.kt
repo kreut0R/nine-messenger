@@ -144,6 +144,18 @@ class MessengerRepositoryTest {
 
         assertEquals(AutoLock.FiveMinutes, settings.autoLock)
         assertTrue(settings.clearClipboard)
+        // A visible red button is something the person asks for, it does not appear on its own.
+        assertFalse(settings.panicButton)
+    }
+
+    @Test
+    fun panicButtonSettingIsSaved() {
+        val saves = store.saves
+
+        repository.setPanicButton(true)
+
+        assertEquals(saves + 1, store.saves)
+        assertTrue(store.stored.settings.panicButton)
     }
 
     @Test

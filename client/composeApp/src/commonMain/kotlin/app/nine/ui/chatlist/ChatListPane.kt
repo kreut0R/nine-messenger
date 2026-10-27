@@ -40,6 +40,7 @@ val ChatListWidth = 360.dp
  * @param chats chats already filtered and sorted for the current tab
  * @param totalChats how many chats there are in total, needed only for the empty-list text
  * @param profileMenu the profile button with its menu: what is inside it, the chat list does not know
+ * @param panicButton whether to show the red panic button, which calls [onPanic]
  */
 @Composable
 fun ChatListPane(
@@ -50,6 +51,8 @@ fun ChatListPane(
     onNewChat: () -> Unit,
     profileMenu: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    panicButton: Boolean = false,
+    onPanic: () -> Unit = {},
 ) {
     val type = NineTheme.typography
     GlassPanel(modifier.width(ChatListWidth)) {
@@ -68,6 +71,16 @@ fun ChatListPane(
             ) {
                 BasicText("Chats", style = type.screenTitle, modifier = Modifier.weight(1f))
                 profileMenu()
+                if (panicButton) {
+                    IconAction(
+                        icon = NineIcons.Alert,
+                        description = "Panic: lock the app and minimize the window",
+                        onClick = onPanic,
+                        tint = NineColors.Danger,
+                        shape = CircleShape,
+                        size = 36.dp,
+                    )
+                }
                 IconAction(NineIcons.Search, "Search chats", ui::toggleChatSearch, shape = CircleShape, size = 36.dp)
                 IconAction(
                     icon = NineIcons.PlusCircle,

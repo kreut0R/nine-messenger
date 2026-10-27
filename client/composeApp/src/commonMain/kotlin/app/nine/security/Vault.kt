@@ -44,6 +44,12 @@ interface Session {
      */
     fun changeAccessCode(current: String, newCode: String): ChangeCodeResult
 
+    /** After how many wrong codes in a row everything is erased. [WipePolicy.Off] (the default) means never. */
+    val wipeAfterFailures: Int
+
+    /** Turns the erase on or off. [limit] is [WipePolicy.Off] or one of [WipePolicy.Options]. */
+    fun setWipeAfterFailures(limit: Int)
+
     /** Wipes the keys from memory. The session cannot be used afterwards. */
     fun lock()
 }
@@ -51,11 +57,17 @@ interface Session {
 sealed interface UnlockResult {
     data class Unlocked(val session: Session) : UnlockResult
 
-    /** Wrong code. [attemptsBeforePause] shows how many attempts are left before a pause. */
-    data class WrongCode(val attemptsBeforePause: Int) : UnlockResult
+    /**
+     * Wrong code. [attemptsBeforePause] shows how many attempts are left before a pause.
+     * [attemptsBeforeWipe] is how many are left before everything is erased, or null if that is off.
+     */
+    data class WrongCode(val attemptsBeforePause: Int, val attemptsBeforeWipe: Int? = null) : UnlockResult
 
     /** Too many failures: until [untilMillis] (milliseconds since 1970) no code is accepted, even the right one. */
-    data class Paused(val untilMillis: Long) : UnlockResult
+    data class Paused(val untilMillis: Long, val attemptsBeforeWipe: Int? = null) : UnlockResult
+
+    /** This was the last allowed wrong code: everything on the device has just been erased. */
+    data object Wiped : UnlockResult
 
     /** The key file cannot be read. Restoring from a key backup remains. */
     data object Damaged : UnlockResult
@@ -64,11 +76,17 @@ sealed interface UnlockResult {
 sealed interface ChangeCodeResult {
     data object Changed : ChangeCodeResult
 
-    /** The current code is wrong. [attemptsBeforePause] shows how many attempts are left before a pause. */
-    data class WrongCode(val attemptsBeforePause: Int) : ChangeCodeResult
+    /**
+     * The current code is wrong. [attemptsBeforePause] shows how many attempts are left before a pause.
+     * [attemptsBeforeWipe] is how many are left before everything is erased, or null if that is off.
+     */
+    data class WrongCode(val attemptsBeforePause: Int, val attemptsBeforeWipe: Int? = null) : ChangeCodeResult
 
     /** Too many failures: until [untilMillis] (milliseconds since 1970) no code is accepted, even the right one. */
-    data class Paused(val untilMillis: Long) : ChangeCodeResult
+    data class Paused(val untilMillis: Long, val attemptsBeforeWipe: Int? = null) : ChangeCodeResult
+
+    /** This was the last allowed wrong code: everything on the device has been erased and the session is closed. */
+    data object Wiped : ChangeCodeResult
 
     /** The key file cannot be read. */
     data object Damaged : ChangeCodeResult
