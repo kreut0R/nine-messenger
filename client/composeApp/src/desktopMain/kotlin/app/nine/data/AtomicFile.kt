@@ -7,8 +7,8 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
 /**
- * Сначала пишем во временный файл и только потом подменяем основной.
- * Так при сбое посреди записи старый файл остаётся целым, а не превращается в обрубок.
+ * First write to a temporary file and only then swap it in for the main one.
+ * This way a crash in the middle of a write leaves the old file intact instead of a stump.
  */
 @Throws(IOException::class)
 fun writeFileAtomically(file: File, bytes: ByteArray) {

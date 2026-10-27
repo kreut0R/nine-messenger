@@ -4,14 +4,14 @@ import app.nine.domain.Chat
 import app.nine.domain.Message
 
 enum class ChatTab(val title: String) {
-    All("Все"),
-    Unread("Непрочитанные"),
-    Archive("Архив"),
+    All("All"),
+    Unread("Unread"),
+    Archive("Archive"),
 }
 
 /**
- * Выбирает чаты для вкладки и поиска и сортирует их: сверху те, где недавно писали.
- * Архивные чаты видны только во вкладке «Архив», даже если в них есть непрочитанные.
+ * Picks the chats for a tab and a search and sorts them: those with recent messages come first.
+ * Archived chats are visible only on the "Archive" tab, even if they have unread messages.
  */
 fun filterChats(chats: List<Chat>, tab: ChatTab, query: String): List<Chat> {
     val needle = query.trim()
@@ -27,17 +27,17 @@ fun filterChats(chats: List<Chat>, tab: ChatTab, query: String): List<Chat> {
         .sortedByDescending { it.lastActivityMillis }
 }
 
-/** Сообщения, содержащие запрос. Пустой запрос оставляет все сообщения. */
+/** Messages containing the query. An empty query keeps all messages. */
 fun filterMessages(messages: List<Message>, query: String): List<Message> {
     val needle = query.trim()
     return if (needle.isEmpty()) messages else messages.filter { it.text.contains(needle, ignoreCase = true) }
 }
 
-/** Что написать в списке, когда показывать нечего. Текст зависит от того, почему список пуст. */
+/** What to write in the list when there is nothing to show. The text depends on why the list is empty. */
 fun emptyListMessage(totalChats: Int, tab: ChatTab, query: String): String = when {
-    totalChats == 0 -> "Чатов пока нет.\nНажмите «+», чтобы создать первый."
-    query.isNotBlank() -> "Ничего не найдено"
-    tab == ChatTab.Unread -> "Непрочитанных нет"
-    tab == ChatTab.Archive -> "Архив пуст"
-    else -> "Здесь пока пусто"
+    totalChats == 0 -> "No chats yet.\nPress + to create your first one."
+    query.isNotBlank() -> "Nothing found"
+    tab == ChatTab.Unread -> "No unread chats"
+    tab == ChatTab.Archive -> "Archive is empty"
+    else -> "Nothing here yet"
 }

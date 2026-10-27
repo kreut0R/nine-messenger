@@ -8,8 +8,8 @@ import androidx.compose.runtime.setValue
 import app.nine.domain.ChatId
 
 /**
- * Состояние экрана, которое не нужно хранить на диске: что выбрано, что набрано и что открыто.
- * Сами чаты и сообщения живут в [app.nine.data.MessengerRepository].
+ * Screen state that does not need to be stored on disk: what is selected, what is typed and what is open.
+ * The chats and messages themselves live in [app.nine.data.MessengerRepository].
  */
 @Stable
 class MessengerUiState {
@@ -20,13 +20,13 @@ class MessengerUiState {
     var chatSearchOpen by mutableStateOf(false)
     var chatSearch by mutableStateOf("")
 
-    /** Поиск внутри открытой переписки. Сбрасывается при смене чата. */
+    /** Search inside the open conversation. Reset when the chat changes. */
     var messageSearch by mutableStateOf("")
 
     var contactPaneOpen by mutableStateOf(true)
     var newChatDialogOpen by mutableStateOf(false)
 
-    // Черновики хранятся по чатам, чтобы набранное не терялось при переходе в другой чат.
+    // Drafts are kept per chat so that what was typed is not lost when switching to another chat.
     private val drafts = mutableStateMapOf<ChatId, String>()
 
     fun selectChat(id: ChatId?) {
@@ -40,7 +40,7 @@ class MessengerUiState {
         if (text.isEmpty()) drafts.remove(id) else drafts[id] = text
     }
 
-    /** Возвращает список в обычный вид: без поиска и на вкладке «Все». Нужно, чтобы новый чат не оказался скрыт фильтром. */
+    /** Returns the list to its normal view: no search and on the "All" tab. Needed so that a new chat is not hidden by a filter. */
     fun showAllChats() {
         tab = ChatTab.All
         chatSearch = ""

@@ -17,8 +17,8 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.Role
 
 /**
- * Делает область кнопкой: курсор-рука, свой фон в покое и другой при наведении мыши.
- * Цвета передаются явно, потому что у выбранного элемента списка фон особый и наведение его не меняет.
+ * Makes an area a button: hand cursor, its own background at rest and another on mouse hover.
+ * Colors are passed explicitly because a selected list item has a special background that hover does not change.
  */
 @Composable
 fun Modifier.pressable(

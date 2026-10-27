@@ -40,8 +40,8 @@ private val SendButtonColor = Color(0xFFE9EFEC)
 private val OnSendButton = Color(0xFF0A100D)
 
 /**
- * Поле ввода сообщения. Enter отправляет, Shift+Enter переносит строку.
- * Фокус ставится сразу при открытии чата, чтобы можно было печатать без клика.
+ * The message input field. Enter sends, Shift+Enter inserts a line break.
+ * Focus is set right when the chat opens, so the person can type without a click.
  */
 @Composable
 fun Composer(
@@ -81,12 +81,12 @@ fun Composer(
                     if (isPlainEnter && event.type == KeyEventType.KeyDown) {
                         if (canSend) onSend()
                     }
-                    // Поглощаем и отпускание клавиши, иначе Enter всё равно успеет вставить перенос строки.
+                    // Consume the key release too, otherwise Enter still manages to insert a line break.
                     isPlainEnter
                 },
             decorationBox = { inner ->
                 Box(Modifier.heightIn(min = 40.dp), contentAlignment = Alignment.CenterStart) {
-                    if (draft.isEmpty()) BasicText("Сообщение", style = type.hint.copy(fontSize = type.messageText.fontSize))
+                    if (draft.isEmpty()) BasicText("Message", style = type.hint.copy(fontSize = type.messageText.fontSize))
                     inner()
                 }
             },
@@ -109,6 +109,6 @@ private fun SendButton(enabled: Boolean, onClick: () -> Unit) {
             ),
         contentAlignment = Alignment.Center,
     ) {
-        NineIcon(NineIcons.Send, tint = OnSendButton, contentDescription = "Отправить")
+        NineIcon(NineIcons.Send, tint = OnSendButton, contentDescription = "Send")
     }
 }

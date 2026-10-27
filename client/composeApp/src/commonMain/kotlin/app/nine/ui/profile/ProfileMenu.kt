@@ -39,9 +39,9 @@ import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
 
 /**
- * Кнопка профиля в шапке списка чатов и меню, которое она открывает.
- * @param displayName имя человека, пустое, если он его не задал
- * @param shortCode начало кода аккаунта: по нему видно, под каким аккаунтом человек сидит
+ * The profile button in the chat list header and the menu it opens.
+ * @param displayName the person's name, empty if they have not set one
+ * @param shortCode the start of the account code: it shows which account the person is signed in with
  */
 @Composable
 fun ProfileMenuButton(
@@ -55,7 +55,7 @@ fun ProfileMenuButton(
     var open by remember { mutableStateOf(false) }
     val below = with(LocalDensity.current) { 44.dp.roundToPx() }
     Box {
-        IconAction(NineIcons.Account, "Профиль", onClick = { open = !open }, shape = CircleShape, size = 36.dp)
+        IconAction(NineIcons.Account, "Profile", onClick = { open = !open }, shape = CircleShape, size = 36.dp)
         if (open) {
             Popup(
                 alignment = Alignment.TopEnd,
@@ -64,7 +64,7 @@ fun ProfileMenuButton(
                 properties = PopupProperties(focusable = true),
             ) {
                 MenuPanel(displayName, shortCode) { choice ->
-                    // Меню закрываем до действия: оно может открыть окно поверх.
+                    // Close the menu before the action: it may open a window on top.
                     open = false
                     when (choice) {
                         MenuChoice.Profile -> onProfile()
@@ -105,16 +105,16 @@ private fun MenuPanel(displayName: String, shortCode: String, onPick: (MenuChoic
                 Avatar(displayName, seed = shortCode, size = 38.dp)
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                BasicText(displayName.ifBlank { "Мой аккаунт" }, style = type.rowTitle, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                BasicText(displayName.ifBlank { "My account" }, style = type.rowTitle, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 BasicText(shortCode, style = type.code)
             }
         }
         Divider()
-        MenuItem(NineIcons.PersonCircle, "Профиль") { onPick(MenuChoice.Profile) }
-        MenuItem(NineIcons.Sliders, "Настройки") { onPick(MenuChoice.Settings) }
+        MenuItem(NineIcons.PersonCircle, "Profile") { onPick(MenuChoice.Profile) }
+        MenuItem(NineIcons.Sliders, "Settings") { onPick(MenuChoice.Settings) }
         Divider()
-        MenuItem(NineIcons.Lock, "Заблокировать") { onPick(MenuChoice.Lock) }
-        MenuItem(NineIcons.SignOut, "Выйти", danger = true) { onPick(MenuChoice.SignOut) }
+        MenuItem(NineIcons.Lock, "Lock") { onPick(MenuChoice.Lock) }
+        MenuItem(NineIcons.SignOut, "Sign out", danger = true) { onPick(MenuChoice.SignOut) }
     }
 }
 

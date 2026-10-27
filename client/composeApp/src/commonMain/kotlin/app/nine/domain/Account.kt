@@ -2,10 +2,10 @@ package app.nine.domain
 
 import kotlin.jvm.JvmInline
 
-/** Идентификатор аккаунта: хэш публичного ключа входа в шестнадцатеричной записи. Телефона и почты у аккаунта нет. */
+/** Account identifier: hash of the sign-in public key in hexadecimal. An account has no phone number or email. */
 @JvmInline
 value class AccountId(val hex: String)
 
-/** Первые 128 бит для показа человеку группами по 4 символа. По ним можно сверить аккаунт голосом или глазами. */
+/** The first 128 bits for showing to a person in groups of 4 characters. Lets two people compare an account by voice or by eye. */
 val AccountId.displayCode: String
     get() = hex.uppercase().take(32).chunked(4).joinToString(" ")

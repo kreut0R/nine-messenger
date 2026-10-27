@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import app.nine.ui.theme.NineColors
 
-/** Выключатель. Включённый горит зелёным: зелёный в приложении означает «действует». */
+/** A switch. When on it glows green: green in the app means "in effect". */
 @Composable
 fun ToggleSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
     val track by animateColorAsState(if (checked) NineColors.Accent else Color.White.copy(alpha = 0.18f))

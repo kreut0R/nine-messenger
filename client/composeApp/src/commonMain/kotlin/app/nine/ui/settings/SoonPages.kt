@@ -5,99 +5,99 @@ import androidx.compose.runtime.Composable
 import app.nine.ui.components.NineIcons
 import app.nine.ui.theme.NineTheme
 
-// Разделы, которые ещё не сделаны. Страницы показывают, что в них появится: это тот же список, что в черновике настроек.
-// Каждая строка помечена «Скоро», чтобы ничто не выглядело рабочим раньше времени.
+// Sections that are not built yet. The pages show what will appear in them: this is the same list as in the settings draft.
+// Every row is marked "Soon", so that nothing looks working ahead of time.
 
 @Composable
-fun NotificationsPage() = SettingsPage("Уведомления") {
-    Subsection("Новые сообщения") {
-        SoonRow(NineIcons.Bell, "Показывать уведомления", "Выключить совсем или показывать, только когда окно свёрнуто.")
+fun NotificationsPage() = SettingsPage("Notifications") {
+    Subsection("New messages") {
+        SoonRow(NineIcons.Bell, "Show notifications", "Turn them off entirely or show them only while the window is minimized.")
         SoonRow(
             NineIcons.HiddenEye,
-            "Прятать текст в уведомлении",
-            "В уведомлении будет только «Новое сообщение»: без имени собеседника и без текста.",
+            "Hide the text in a notification",
+            "A notification will say only \"New message\": no contact name and no text.",
         )
     }
 }
 
 @Composable
-fun MessagesPage() = SettingsPage("Сообщения") {
-    Subsection("История") {
+fun MessagesPage() = SettingsPage("Messages") {
+    Subsection("History") {
         SoonRow(
             NineIcons.Clock,
-            "Исчезающие сообщения",
-            "Выключено, час, день или неделя. Таймер хранится внутри сообщения, у обоих собеседников одинаково.",
+            "Disappearing messages",
+            "Off, an hour, a day or a week. The timer is stored inside the message and is the same for both contacts.",
         )
-        SoonRow(NineIcons.Database, "Хранение истории", "Сколько хранить переписку на устройстве.")
+        SoonRow(NineIcons.Database, "History storage", "How long to keep conversations on the device.")
     }
     SettingsDivider()
-    Subsection("Оформление") {
-        SoonRow(NineIcons.Chat, "Цвет своих сообщений", "Сейчас выбирается в панели контакта, здесь появится общий выбор.")
+    Subsection("Appearance") {
+        SoonRow(NineIcons.Chat, "Color of own messages", "Chosen in the contact panel for now, a global choice will appear here.")
     }
 }
 
 @Composable
-fun ContactsPage() = SettingsPage("Собеседники") {
-    Subsection("Проверка") {
+fun ContactsPage() = SettingsPage("Contacts") {
+    Subsection("Verification") {
         SoonRow(
             NineIcons.Shield,
-            "Номер безопасности",
-            "Для проверки лично или по QR-коду. В панели контакта уже есть отпечаток.",
+            "Safety number",
+            "For verifying in person or with a QR code. The contact panel already has a fingerprint.",
         )
-        SoonRow(NineIcons.Key, "Смена ключа собеседника", "Предупреждать, если у собеседника сменился ключ.")
+        SoonRow(NineIcons.Key, "Contact key change", "Warn if a contact's key has changed.")
     }
 }
 
 @Composable
-fun NetworkPage() = SettingsPage("Сеть") {
-    Subsection("Подключение") {
-        SoonRow(NineIcons.Globe, "Адрес сервера", "Куда подключается приложение. Появится вместе с сервером.")
-        SoonRow(NineIcons.Link, "Прокси или Tor", "Настройка транспорта, логику приложения не меняет.")
+fun NetworkPage() = SettingsPage("Network") {
+    Subsection("Connection") {
+        SoonRow(NineIcons.Globe, "Server address", "Where the app connects. Will appear together with the server.")
+        SoonRow(NineIcons.Link, "Proxy or Tor", "Transport setup, does not change the app logic.")
     }
 }
 
 @Composable
-fun AppearancePage() = SettingsPage("Внешний вид") {
-    Subsection("Тема") {
-        SoonRow(NineIcons.Moon, "Тема и цвета", "Тёмная тема уже есть. Другие темы и цвета появятся позже.")
-        SoonRow(NineIcons.Keyboard, "Размер шрифта и язык", "Размер текста и язык интерфейса.")
+fun AppearancePage() = SettingsPage("Appearance") {
+    Subsection("Theme") {
+        SoonRow(NineIcons.Moon, "Theme and colors", "The dark theme is already here. Other themes and colors will come later.")
+        SoonRow(NineIcons.Keyboard, "Font size and language", "The text size and the interface language.")
     }
     SettingsDivider()
-    Subsection("Список чатов") {
-        SoonRow(NineIcons.HiddenEye, "Маска анонимности", "Показывать маску внизу списка чатов или скрыть её.")
+    Subsection("Chat list") {
+        SoonRow(NineIcons.HiddenEye, "Anonymity mask", "Show the mask at the bottom of the chat list or hide it.")
     }
 }
 
 @Composable
-fun DataPage() = SettingsPage("Данные") {
-    Subsection("Копии") {
+fun DataPage() = SettingsPage("Data") {
+    Subsection("Backups") {
         SoonRow(
             NineIcons.Download,
-            "Копия чатов",
-            "Экспорт зашифрованной копии чатов в файл и импорт обратно.",
+            "Chat backup",
+            "Export an encrypted backup of the chats to a file and import it back.",
         )
         SoonRow(
             NineIcons.Trash,
-            "Удалить всё на этом устройстве",
-            "С подтверждением. Пока это можно сделать через «Выйти» в разделе «Профиль и вход».",
+            "Delete everything on this device",
+            "With a confirmation. For now this can be done through \"Sign out\" in the \"Profile and sign-in\" section.",
         )
     }
 }
 
 @Composable
-fun AboutPage() = SettingsPage("О приложении") {
-    Subsection("Сборка") {
-        SoonRow(NineIcons.Info, "Версия и лицензия", "Версия, лицензия AGPL и ссылка на исходный код.")
+fun AboutPage() = SettingsPage("About") {
+    Subsection("Build") {
+        SoonRow(NineIcons.Info, "Version and license", "The version, the AGPL license and a link to the source code.")
         SoonRow(
             NineIcons.Shield,
-            "Проверка сборки",
-            "Хэш сборки и подпись релиза, чтобы можно было проверить, что собрано именно из этого кода.",
+            "Build verification",
+            "The build hash and the release signature, so that it can be checked that it was built from exactly this code.",
         )
     }
     SettingsDivider()
-    Subsection("Чего здесь не будет") {
+    Subsection("What will not be here") {
         BasicText(
-            "Аналитики, доступа к контактам, оплаты и подписки, лишних разрешений.",
+            "Analytics, access to contacts, payments and subscriptions, extra permissions.",
             style = NineTheme.typography.chatPreview,
         )
     }

@@ -28,11 +28,11 @@ class MessengerRepositoryTest {
 
     @Test
     fun createChatTrimsTitleAndRemembersCreationTime() {
-        val id = assertNotNull(repository.createChat("  Лис  "))
+        val id = assertNotNull(repository.createChat("  Fox  "))
 
         val chat = repository.data.value.chats.single()
         assertEquals(id, chat.id)
-        assertEquals("Лис", chat.title)
+        assertEquals("Fox", chat.title)
         assertEquals(1_000, chat.createdAtMillis)
     }
 
@@ -44,42 +44,42 @@ class MessengerRepositoryTest {
 
     @Test
     fun sendMessageAppendsOutgoingMessageInOrder() {
-        val id = assertNotNull(repository.createChat("Лис"))
+        val id = assertNotNull(repository.createChat("Fox"))
 
         time.now = 2_000
-        assertTrue(repository.sendMessage(id, "Привет"))
+        assertTrue(repository.sendMessage(id, "Hello"))
         time.now = 3_000
-        assertTrue(repository.sendMessage(id, "Как дела?"))
+        assertTrue(repository.sendMessage(id, "How are you?"))
 
         val messages = repository.data.value.chats.single().messages
-        assertEquals(listOf("Привет", "Как дела?"), messages.map { it.text })
+        assertEquals(listOf("Hello", "How are you?"), messages.map { it.text })
         assertEquals(listOf(2_000L, 3_000L), messages.map { it.sentAtMillis })
         assertTrue(messages.all { it.author == Author.Me && it.delivery == Delivery.Local })
     }
 
     @Test
     fun sendMessageTrimsEdgesButKeepsInnerLineBreaks() {
-        val id = assertNotNull(repository.createChat("Лис"))
+        val id = assertNotNull(repository.createChat("Fox"))
 
-        repository.sendMessage(id, "\n  строка 1\nстрока 2  \n")
+        repository.sendMessage(id, "\n  line 1\nline 2  \n")
 
-        assertEquals("строка 1\nстрока 2", repository.data.value.chats.single().messages.single().text)
+        assertEquals("line 1\nline 2", repository.data.value.chats.single().messages.single().text)
     }
 
     @Test
     fun sendMessageIgnoresBlankTextAndUnknownChat() {
-        val id = assertNotNull(repository.createChat("Лис"))
+        val id = assertNotNull(repository.createChat("Fox"))
 
         assertFalse(repository.sendMessage(id, " \n "))
-        assertFalse(repository.sendMessage(ChatId("нет-такого"), "Привет"))
+        assertFalse(repository.sendMessage(ChatId("no-such-chat"), "Hello"))
 
         assertTrue(repository.data.value.chats.single().messages.isEmpty())
     }
 
     @Test
     fun everyChangeIsSavedToStore() {
-        val id = assertNotNull(repository.createChat("Лис"))
-        repository.sendMessage(id, "Привет")
+        val id = assertNotNull(repository.createChat("Fox"))
+        repository.sendMessage(id, "Hello")
         repository.setBubbleColor(BubbleColor.Moss)
 
         assertEquals(3, store.saves)
@@ -88,8 +88,8 @@ class MessengerRepositoryTest {
 
     @Test
     fun newRepositoryRestoresDataFromStore() {
-        val id = assertNotNull(repository.createChat("Лис"))
-        repository.sendMessage(id, "Привет")
+        val id = assertNotNull(repository.createChat("Fox"))
+        repository.sendMessage(id, "Hello")
 
         val restored = MessengerRepository(store, time, sequentialIds())
 
@@ -98,7 +98,7 @@ class MessengerRepositoryTest {
 
     @Test
     fun archiveFlagCanBeSetAndCleared() {
-        val id = assertNotNull(repository.createChat("Лис"))
+        val id = assertNotNull(repository.createChat("Fox"))
 
         repository.setArchived(id, true)
         assertTrue(repository.data.value.chats.single().archived)
@@ -109,7 +109,7 @@ class MessengerRepositoryTest {
 
     @Test
     fun markReadResetsUnreadCounter() {
-        val id = assertNotNull(repository.createChat("Лис"))
+        val id = assertNotNull(repository.createChat("Fox"))
         store.stored = repository.data.value.let { data ->
             data.copy(chats = data.chats.map { it.copy(unreadCount = 3) })
         }
@@ -122,7 +122,7 @@ class MessengerRepositoryTest {
 
     @Test
     fun unchangedStateIsNotWrittenAgain() {
-        val id = assertNotNull(repository.createChat("Лис"))
+        val id = assertNotNull(repository.createChat("Fox"))
         val savesBefore = store.saves
 
         repository.markRead(id)
@@ -148,7 +148,7 @@ class MessengerRepositoryTest {
 
     @Test
     fun settingsChangesAreSavedAndKeepTheChats() {
-        repository.createChat("Лис")
+        repository.createChat("Fox")
         val saves = store.saves
 
         repository.setAutoLock(AutoLock.OnMinimize)
@@ -157,22 +157,22 @@ class MessengerRepositoryTest {
         assertEquals(saves + 2, store.saves)
         assertEquals(AutoLock.OnMinimize, store.stored.settings.autoLock)
         assertFalse(store.stored.settings.clearClipboard)
-        assertEquals("Лис", store.stored.chats.single().title)
+        assertEquals("Fox", store.stored.chats.single().title)
     }
 
     @Test
     fun displayNameIsEmptyUntilSetAndIsSavedTrimmed() {
         assertEquals("", repository.data.value.displayName)
 
-        repository.setDisplayName("  Лис  ")
+        repository.setDisplayName("  Fox  ")
 
-        assertEquals("Лис", repository.data.value.displayName)
-        assertEquals("Лис", store.stored.displayName)
+        assertEquals("Fox", repository.data.value.displayName)
+        assertEquals("Fox", store.stored.displayName)
     }
 
     @Test
     fun displayNameIsCutToTheLimitWithoutTrailingSpace() {
-        repository.setDisplayName("а".repeat(MaxDisplayNameLength - 1) + " " + "б".repeat(10))
+        repository.setDisplayName("a".repeat(MaxDisplayNameLength - 1) + " " + "b".repeat(10))
 
         val name = repository.data.value.displayName
         assertEquals(MaxDisplayNameLength - 1, name.length)
@@ -181,7 +181,7 @@ class MessengerRepositoryTest {
 
     @Test
     fun blankDisplayNameClearsIt() {
-        repository.setDisplayName("Лис")
+        repository.setDisplayName("Fox")
 
         repository.setDisplayName("   ")
 

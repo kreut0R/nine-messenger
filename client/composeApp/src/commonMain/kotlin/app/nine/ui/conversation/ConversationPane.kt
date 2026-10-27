@@ -59,14 +59,14 @@ import kotlin.time.Instant
 
 private val HeaderHeight = 78.dp
 
-// Сообщения прокручиваются под шапкой и полем ввода, поэтому у списка есть отступы сверху и снизу на их высоту.
+// Messages scroll under the header and the input field, so the list has padding at the top and bottom equal to their height.
 private val ListTopPadding = HeaderHeight + 26.dp
 private val ListBottomPadding = 112.dp
 
-/** Доля ширины переписки, которую может занять пузырь. Остальное оставляем пустым, чтобы строки не растягивались. */
+/** The share of the conversation width a bubble may take. The rest is left empty so that lines do not stretch. */
 private const val MAX_BUBBLE_FRACTION = 0.62f
 
-/** Центральная колонка. Пока чат не выбран, показывает подсказку. */
+/** The central column. While no chat is selected, it shows a hint. */
 @Composable
 fun ConversationPane(
     chat: Chat?,
@@ -78,9 +78,9 @@ fun ConversationPane(
 ) {
     GlassPanel(modifier) {
         if (chat == null) {
-            CenteredHint("Выберите чат слева\nили создайте новый")
+            CenteredHint("Pick a chat on the left\nor create a new one")
         } else {
-            // key пересоздаёт всё внутри при смене чата: прокрутка и фокус начинаются заново.
+            // key recreates everything inside when the chat changes: scroll and focus start anew.
             androidx.compose.runtime.key(chat.id) {
                 OpenConversation(chat, bubbleColor, ui, time, onSend)
             }
@@ -104,7 +104,7 @@ private fun OpenConversation(
     Box(Modifier.fillMaxSize()) {
         MessageList(timeline, chat, bubbleColor.color, zone, time)
         if (timeline.isEmpty()) {
-            CenteredHint(if (chat.messages.isEmpty()) "Напишите первое сообщение" else "Ничего не найдено")
+            CenteredHint(if (chat.messages.isEmpty()) "Write the first message" else "Nothing found")
         }
         ConversationHeader(
             chat = chat,
@@ -124,17 +124,17 @@ private fun OpenConversation(
 @Composable
 private fun MessageList(timeline: List<TimelineItem>, chat: Chat, ownColor: Color, zone: TimeZone, time: TimeSource) {
     val listState = rememberLazyListState()
-    // Лента перевёрнута (reverseLayout), поэтому элемент 0 — самый новый и находится внизу.
-    // Когда приходит новое сообщение, возвращаемся к нему, даже если человек листал историю.
+    // The feed is reversed (reverseLayout), so item 0 is the newest and sits at the bottom.
+    // When a new message arrives, return to it even if the person was scrolling through history.
     LaunchedEffect(chat.lastMessage?.id) { listState.scrollToItem(0) }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val maxBubbleWidth = maxWidth * MAX_BUBBLE_FRACTION
-        // «Сегодня» считаем заново при каждом новом сообщении: этого достаточно, пока приложение не живёт через полночь.
+        // "Today" is recomputed on every new message: that is enough while the app does not live through midnight.
         val today = remember(chat.lastMessage?.id) {
             Instant.fromEpochMilliseconds(time.nowMillis()).toLocalDateTime(zone).date
         }
-        // Выделение нужно, чтобы текст сообщений можно было скопировать мышью.
+        // Selection is needed so that the message text can be copied with the mouse.
         SelectionContainer {
             LazyColumn(
                 state = listState,
@@ -154,7 +154,7 @@ private fun MessageList(timeline: List<TimelineItem>, chat: Chat, ownColor: Colo
     }
 }
 
-/** Устойчивый ключ элемента ленты, чтобы Compose не пересоздавал строки при добавлении сообщений. */
+/** A stable key for a feed item, so that Compose does not recreate rows when messages are added. */
 private val TimelineItem.key: String
     get() = when (this) {
         is TimelineItem.DayHeader -> "day-$date"
@@ -211,7 +211,7 @@ private fun Bubble(text: String, mine: Boolean, ownColor: Color, maxWidth: Dp) {
     }
 }
 
-/** Время под последним сообщением группы. Галочка появляется только у доставленных своих сообщений. */
+/** The time under the last message of a group. The tick appears only on delivered own messages. */
 @Composable
 private fun Stamp(message: Message, mine: Boolean, zone: TimeZone) {
     Row(
@@ -253,12 +253,12 @@ private fun ConversationHeader(
         Avatar(chat.title, seed = chat.id.value, size = AvatarSize.Header)
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             BasicText(chat.title, style = type.chatName, maxLines = 1)
-            // Статуса «в сети» пока нет: он появится вместе с сервером. Сейчас честно пишем, где лежит переписка.
-            BasicText("Переписка хранится только на этом устройстве", style = type.time, maxLines = 1)
+            // There is no "online" status yet: it will come with the server. For now we honestly say where the conversation is stored.
+            BasicText("The conversation is stored only on this device", style = type.time, maxLines = 1)
         }
         IconAction(
             icon = NineIcons.SidePanel,
-            description = if (contactPaneOpen) "Скрыть панель контакта" else "Показать панель контакта",
+            description = if (contactPaneOpen) "Hide the contact panel" else "Show the contact panel",
             onClick = onToggleContactPane,
             tint = if (contactPaneOpen) NineColors.TextPrimary else NineColors.TextSecondary,
         )

@@ -17,12 +17,12 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
- * Единственное место, где меняются чаты и сообщения.
+ * The only place where chats and messages are changed.
  *
- * Сейчас всё живёт на устройстве. Когда появится сервер, отправка сообщения будет проходить здесь же:
- * сначала запись с [app.nine.domain.Delivery.Local], затем отправка и смена статуса. Интерфейс при этом не изменится.
+ * Everything lives on the device for now. Once there is a server, sending a message will go through here as well:
+ * first a record with [app.nine.domain.Delivery.Local], then the send and a status change. The UI will not change.
  *
- * Вызывать методы нужно с потока интерфейса: состояние не рассчитано на одновременную запись из нескольких потоков.
+ * Call the methods from the UI thread: the state is not designed for concurrent writes from several threads.
  */
 class MessengerRepository(
     private val store: MessengerStore,
@@ -33,7 +33,7 @@ class MessengerRepository(
 
     val data: StateFlow<MessengerData> = state.asStateFlow()
 
-    /** Создаёт пустой чат и возвращает его id. Возвращает null, если имя пустое. */
+    /** Creates an empty chat and returns its id. Returns null if the name is blank. */
     fun createChat(title: String): ChatId? {
         val name = title.trim()
         if (name.isEmpty()) return null
@@ -43,8 +43,8 @@ class MessengerRepository(
     }
 
     /**
-     * Добавляет исходящее сообщение в конец чата.
-     * Пробелы по краям обрезаются. Пустое сообщение и неизвестный чат игнорируются, тогда возвращается false.
+     * Appends an outgoing message to the end of the chat.
+     * Leading and trailing whitespace is trimmed. An empty message or an unknown chat is ignored and false is returned.
      */
     fun sendMessage(chatId: ChatId, text: String): Boolean {
         val body = text.trim()
@@ -57,7 +57,7 @@ class MessengerRepository(
         changeChat(chatId) { it.copy(archived = archived) }
     }
 
-    /** Сбрасывает счётчик непрочитанных. Вызывается, когда человек открыл чат. */
+    /** Resets the unread counter. Called when the person has opened the chat. */
     fun markRead(chatId: ChatId) {
         changeChat(chatId) { if (it.unreadCount == 0) it else it.copy(unreadCount = 0) }
     }
@@ -74,7 +74,7 @@ class MessengerRepository(
         change { it.copy(settings = it.settings.copy(clearClipboard = clear)) }
     }
 
-    /** Пробелы по краям обрезаются, слишком длинное имя укорачивается. Пустое имя значит, что имя не задано. */
+    /** Leading and trailing whitespace is trimmed, an overlong name is shortened. A blank name means no name is set. */
     fun setDisplayName(name: String) {
         val clean = name.trim().take(MaxDisplayNameLength).trimEnd()
         change { it.copy(displayName = clean) }
@@ -87,8 +87,8 @@ class MessengerRepository(
     }
 
     /**
-     * Меняет состояние и сразу сохраняет его: данные небольшие, а потерять набранное при сбое хуже, чем записать лишний раз.
-     * Если ничего не изменилось (например, чат уже прочитан), файл не трогаем.
+     * Changes the state and saves it right away: the data is small, and losing what was typed in a crash is worse than writing once too often.
+     * If nothing changed (for example, the chat is already read), the file is not touched.
      */
     private fun change(transform: (MessengerData) -> MessengerData) {
         val before = state.value

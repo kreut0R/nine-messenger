@@ -14,12 +14,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * Иконки приложения. Это набор Phosphor Icons (лицензия MIT, текст в `licenses/Phosphor-MIT.txt`).
- * Кнопки и элементы управления нарисованы контуром, значки настроек и меню залиты.
- * Все рисуются чёрным цветом на сетке 256×256 и перекрашиваются при показе, см. [NineIcon].
+ * The app icons. This is the Phosphor Icons set (MIT license, text in `licenses/Phosphor-MIT.txt`).
+ * Buttons and controls are drawn as outlines, settings and menu glyphs are filled.
+ * All are drawn in black on a 256×256 grid and recolored when shown, see [NineIcon].
  */
 object NineIcons {
-    // Контурные: кнопки, поиск, галочки, подсказки у полей.
+    // Outline: buttons, search, ticks, hints in fields.
     val Search = icon("Search", "M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z")
     val PlusCircle = icon("PlusCircle", "M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm48-88a8,8,0,0,1-8,8H136v32a8,8,0,0,1-16,0V136H88a8,8,0,0,1,0-16h32V88a8,8,0,0,1,16,0v32h32A8,8,0,0,1,176,128Z")
     val SidePanel = icon("SidePanel", "M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM40,56H80V200H40ZM216,200H96V56H216V200Z")
@@ -33,7 +33,7 @@ object NineIcons {
     val Sliders = icon("Sliders", "M40,88H73a32,32,0,0,0,62,0h81a8,8,0,0,0,0-16H135a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16Zm64-24A16,16,0,1,1,88,80,16,16,0,0,1,104,64ZM216,168H199a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16h97a32,32,0,0,0,62,0h17a8,8,0,0,0,0-16Zm-48,24a16,16,0,1,1,16-16A16,16,0,0,1,168,192Z")
     val Account = icon("Account", "M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-59.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,131.52,0Z")
 
-    // Залитые: меню, настройки, плитки у строк.
+    // Filled: menus, settings, the tiles on rows.
     val Person = icon("Person", "M230.93,220a8,8,0,0,1-6.93,4H32a8,8,0,0,1-6.92-12c15.23-26.33,38.7-45.21,66.09-54.16a72,72,0,1,1,73.66,0c27.39,8.95,50.86,27.83,66.09,54.16A8,8,0,0,1,230.93,220Z")
     val PersonCircle = icon("PersonCircle", "M172,120a44,44,0,1,1-44-44A44.05,44.05,0,0,1,172,120Zm60,8A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88.09,88.09,0,0,0-91.47-87.93C77.43,41.89,39.87,81.12,40,128.25a87.65,87.65,0,0,0,22.24,58.16A79.71,79.71,0,0,1,84,165.1a4,4,0,0,1,4.83.32,59.83,59.83,0,0,0,78.28,0,4,4,0,0,1,4.83-.32,79.71,79.71,0,0,1,21.79,21.31A87.62,87.62,0,0,0,216,128Z")
     val Shield = icon("Shield", "M208,40H48A16,16,0,0,0,32,56v56c0,52.72,25.52,84.67,46.93,102.19,23.06,18.86,46,25.26,47,25.53a8,8,0,0,0,4.2,0c1-.27,23.91-6.67,47-25.53C198.48,196.67,224,164.72,224,112V56A16,16,0,0,0,208,40Zm-34.32,69.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z")
@@ -70,7 +70,7 @@ private fun icon(name: String, pathData: String): ImageVector =
         viewportHeight = 256f,
     ).addPath(pathData = addPathNodes(pathData), fill = SolidColor(Color.Black)).build()
 
-/** Рисует иконку нужным цветом. [contentDescription] нужен для всего, что нажимается или несёт смысл. */
+/** Draws an icon in the needed color. [contentDescription] is needed for everything that is pressed or carries meaning. */
 @Composable
 fun NineIcon(
     icon: ImageVector,

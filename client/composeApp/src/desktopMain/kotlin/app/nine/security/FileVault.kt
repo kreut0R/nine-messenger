@@ -13,12 +13,12 @@ import java.io.IOException
 import java.util.Base64
 
 /**
- * Хранит аккаунт в папке приложения тремя файлами:
- * - `vault.json`: главный ключ, зашифрованный ключом из кода доступа (Argon2id), и счётчик неудачных попыток;
- * - `identity.enc`: ключ входа, зашифрованный главным ключом;
- * - `messenger.enc`: переписка, зашифрованная главным ключом.
+ * Keeps the account in the app folder as three files:
+ * - `vault.json`: the master key, encrypted with a key derived from the access code (Argon2id), and the failed-attempt counter;
+ * - `identity.enc`: the sign-in key, encrypted with the master key;
+ * - `messenger.enc`: the conversations, encrypted with the master key.
  *
- * Код доступа не хранится нигде. Верный код проверяется тем, что главный ключ расшифровывается без ошибки.
+ * The access code is stored nowhere. A correct code is recognized by the master key decrypting without an error.
  */
 class FileVault(
     private val directory: File,
@@ -38,8 +38,8 @@ class FileVault(
     override fun hasAccount(): Boolean = vaultFile.exists()
 
     override fun createAccount(code: String): Session {
-        require(isAcceptableAccessCode(code)) { "Код доступа короче $MinAccessCodeLength символов" }
-        check(!hasAccount()) { "На устройстве уже есть аккаунт" }
+        require(isAcceptableAccessCode(code)) { "The access code is shorter than $MinAccessCodeLength characters" }
+        check(!hasAccount()) { "The device already has an account" }
         return setUp(Identity.generate(), code)
     }
 
@@ -59,8 +59,8 @@ class FileVault(
     }
 
     /**
-     * Проверяет код с учётом лимита попыток и возвращает главный ключ или причину отказа.
-     * Неудачу записываем до проверки: иначе можно выключить приложение посреди проверки и перебирать код без лимита.
+     * Checks the code against the attempt limit and returns the master key or the reason for refusal.
+     * The failure is recorded before the check: otherwise the app could be switched off in the middle of a check and the code guessed without a limit.
      */
     private fun check(code: String): Check {
         val record = readRecord() ?: return Check.Refused(UnlockResult.Damaged)
@@ -81,13 +81,13 @@ class FileVault(
     }
 
     override fun restoreAccount(backup: ByteArray, backupPassword: String, code: String): RestoreResult {
-        require(isAcceptableAccessCode(code)) { "Код доступа короче $MinAccessCodeLength символов" }
+        require(isAcceptableAccessCode(code)) { "The access code is shorter than $MinAccessCodeLength characters" }
         val identity = when (val read = KeyBackup.read(backup, backupPassword)) {
             is KeyBackup.ReadResult.Opened -> read.identity
             KeyBackup.ReadResult.WrongPassword -> return RestoreResult.WrongBackupPassword
             KeyBackup.ReadResult.NotABackup -> return RestoreResult.NotABackup
         }
-        // Стираем только после того, как копия открылась: с неверным паролем текущий аккаунт остаётся нетронутым.
+        // Erase only after the backup has opened: with a wrong password the current account stays untouched.
         wipe()
         return RestoreResult.Restored(setUp(identity, code))
     }
@@ -112,12 +112,12 @@ class FileVault(
         writeFileAtomically(identityFile, Crypto.seal(masterKey, identity.seed, IdentityPurpose))
         val store = EncryptedMessengerStore(dataFile, masterKey)
         moveOpenDataInside(store)
-        // Запись с ключами пишется последней: пока её нет, аккаунта на устройстве нет, и оборванная установка не страшна.
+        // The record with the keys is written last: until it exists there is no account on the device, so an interrupted setup does no harm.
         writeRecord(record)
         return DeviceSession(identity, masterKey, store, cost)
     }
 
-    /** Прототип хранил переписку открытым файлом. Переносим её в шифрованное хранилище и стираем открытую копию. */
+    /** The prototype kept conversations in a plain file. Move them into the encrypted store and erase the plain copy. */
     private fun moveOpenDataInside(store: MessengerStore) {
         if (!File(directory, "messenger.json").exists()) return
         store.save(FileMessengerStore(directory).load())
@@ -142,20 +142,20 @@ class FileVault(
         eraseFiles("messenger.enc")
     }
 
-    /** Стирает файл и его временные и отложенные копии. */
+    /** Erases the file and its temporary and set-aside copies. */
     private fun eraseFiles(name: String) {
         listOf(name, "$name.tmp", "$name.broken").map { File(directory, it) }.filter { it.exists() }.forEach(::erase)
     }
 
     /**
-     * Перед удалением затираем содержимое нулями. На SSD и в журналируемых файловых системах это не гарантирует,
-     * что старые данные исчезли физически, поэтому полагаться стоит на шифрование, а не на затирание.
+     * Before deleting, overwrite the contents with zeros. On SSDs and journaling file systems this does not guarantee
+     * that the old data is physically gone, so rely on the encryption, not on the overwrite.
      */
     private fun erase(file: File) {
         try {
             file.writeBytes(ByteArray(file.length().toInt()))
         } catch (error: IOException) {
-            // Не получилось затереть, всё равно удаляем.
+            // Could not overwrite, delete anyway.
         }
         file.delete()
     }
@@ -176,7 +176,7 @@ class FileVault(
         override fun exportKeyBackup(password: String): ByteArray = KeyBackup.create(identity, password, backupCost)
 
         override fun changeAccessCode(current: String, newCode: String): ChangeCodeResult {
-            require(isAcceptableAccessCode(newCode)) { "Код доступа короче $MinAccessCodeLength символов" }
+            require(isAcceptableAccessCode(newCode)) { "The access code is shorter than $MinAccessCodeLength characters" }
             val passed = when (val check = check(current)) {
                 is Check.Refused -> return when (val refusal = check.result) {
                     is UnlockResult.WrongCode -> ChangeCodeResult.WrongCode(refusal.attemptsBeforePause)
@@ -187,7 +187,7 @@ class FileVault(
             }
             val salt = Crypto.randomBytes(Crypto.SaltSize)
             val codeKey = Crypto.deriveKey(newCode, salt, cost)
-            // Запись заменяется целиком одним атомарным действием: до него действует старый код, после него новый.
+            // The record is replaced whole in one atomic action: before it the old code applies, after it the new one.
             writeRecord(
                 VaultRecord(
                     cost = cost,

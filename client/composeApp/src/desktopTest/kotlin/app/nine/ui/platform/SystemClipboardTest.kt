@@ -20,7 +20,7 @@ class SystemClipboardTest {
     fun copiedTextIsRemovedAfterTheDelay() = runBlocking {
         val clipboard = MemoryClipboard()
 
-        clipboard.copyTemporarily("код аккаунта", forgetAfterMillis = 5)
+        clipboard.copyTemporarily("account code", forgetAfterMillis = 5)
 
         assertNull(clipboard.text())
     }
@@ -29,12 +29,12 @@ class SystemClipboardTest {
     fun somethingCopiedLaterIsLeftAlone() = runBlocking {
         val clipboard = MemoryClipboard()
         val other = object : SystemClipboard by clipboard {
-            override fun text(): String? = "чужое"
+            override fun text(): String? = "someone else's"
         }
 
-        other.copyTemporarily("код аккаунта", forgetAfterMillis = 5)
+        other.copyTemporarily("account code", forgetAfterMillis = 5)
 
-        // Очистка не должна стирать то, что человек скопировал уже не из Nine.
-        assertEquals("код аккаунта", clipboard.current)
+        // Clearing must not erase what the person copied from somewhere other than Nine.
+        assertEquals("account code", clipboard.current)
     }
 }

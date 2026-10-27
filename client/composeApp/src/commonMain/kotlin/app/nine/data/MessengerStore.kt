@@ -2,9 +2,9 @@ package app.nine.data
 
 import app.nine.domain.MessengerData
 
-/** Где лежат данные приложения. Сейчас это файл на диске, позже сюда можно добавить базу данных. */
+/** Where the app data lives. For now it is a file on disk; a database can be added here later. */
 interface MessengerStore {
-    /** Читает сохранённые данные. Если их нет или файл повреждён, возвращает пустое состояние. */
+    /** Reads the saved data. If there is none or the file is damaged, returns an empty state. */
     fun load(): MessengerData
 
     fun save(data: MessengerData)

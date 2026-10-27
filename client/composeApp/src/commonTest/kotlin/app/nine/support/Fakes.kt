@@ -4,12 +4,12 @@ import app.nine.data.MessengerStore
 import app.nine.domain.MessengerData
 import app.nine.domain.TimeSource
 
-/** Время, которым управляет тест. */
+/** Time controlled by the test. */
 class FakeTime(var now: Long = 0L) : TimeSource {
     override fun nowMillis(): Long = now
 }
 
-/** Хранилище в памяти. [saves] позволяет проверить, что изменения действительно записываются. */
+/** In-memory store. [saves] lets a test check that changes are actually written. */
 class InMemoryStore(var stored: MessengerData = MessengerData()) : MessengerStore {
     var saves = 0
         private set
@@ -22,7 +22,7 @@ class InMemoryStore(var stored: MessengerData = MessengerData()) : MessengerStor
     }
 }
 
-/** Генератор предсказуемых id: id-1, id-2 и так далее. */
+/** Generator of predictable ids: id-1, id-2 and so on. */
 fun sequentialIds(): () -> String {
     var next = 0
     return { "id-${++next}" }

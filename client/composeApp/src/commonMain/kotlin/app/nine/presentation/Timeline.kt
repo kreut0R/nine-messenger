@@ -7,7 +7,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Instant
 
-/** Элемент ленты переписки: либо заголовок дня, либо подряд идущие сообщения одного автора. */
+/** An element of the conversation feed: either a day header or consecutive messages from one author. */
 sealed interface TimelineItem {
     data class DayHeader(val date: LocalDate) : TimelineItem
 
@@ -15,9 +15,9 @@ sealed interface TimelineItem {
 }
 
 /**
- * Превращает плоский список сообщений в ленту для показа.
- * Сообщения одного автора подряд склеиваются в группу, а новый день всегда начинается с заголовка и новой группы.
- * Ожидается, что сообщения уже отсортированы по времени, как они и хранятся.
+ * Turns a flat list of messages into a feed for display.
+ * Consecutive messages from one author are merged into a group, and a new day always starts with a header and a new group.
+ * The messages are expected to be already sorted by time, as they are stored.
  */
 fun buildTimeline(messages: List<Message>, zone: TimeZone): List<TimelineItem> {
     val items = mutableListOf<TimelineItem>()

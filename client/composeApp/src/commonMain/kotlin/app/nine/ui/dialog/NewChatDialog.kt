@@ -40,8 +40,8 @@ import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
 
 /**
- * Окно создания чата поверх всего приложения. Закрывается по Escape, по клику на затемнение и по «Отмена».
- * Создаёт чат только с непустым именем, поэтому [onCreate] всегда получает уже готовое имя.
+ * The new-chat window over the whole app. Closes on Escape, on a click on the dim layer and on "Cancel".
+ * Creates a chat only with a non-empty name, so [onCreate] always receives a ready name.
  */
 @Composable
 fun NewChatDialog(onCreate: (String) -> Unit, onDismiss: () -> Unit) {
@@ -62,8 +62,8 @@ fun NewChatDialog(onCreate: (String) -> Unit, onDismiss: () -> Unit) {
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
-            BasicText("Новый чат", style = type.profileName)
-            BasicText("Как назвать собеседника? Имя видно только вам.", style = type.chatPreview)
+            BasicText("New chat", style = type.profileName)
+            BasicText("What should the contact be called? Only you see the name.", style = type.chatPreview)
             BasicTextField(
                 value = name,
                 onValueChange = { name = it },
@@ -90,14 +90,14 @@ fun NewChatDialog(onCreate: (String) -> Unit, onDismiss: () -> Unit) {
                             .padding(horizontal = 14.dp),
                         contentAlignment = Alignment.CenterStart,
                     ) {
-                        if (name.isEmpty()) BasicText("Имя", style = type.hint)
+                        if (name.isEmpty()) BasicText("Name", style = type.hint)
                         inner()
                     }
                 },
             )
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)) {
-                ActionButton("Отмена", onClick = onDismiss)
-                ActionButton("Создать", onClick = { submit() }, primary = true, enabled = canCreate)
+                ActionButton("Cancel", onClick = onDismiss)
+                ActionButton("Create", onClick = { submit() }, primary = true, enabled = canCreate)
             }
         }
     }

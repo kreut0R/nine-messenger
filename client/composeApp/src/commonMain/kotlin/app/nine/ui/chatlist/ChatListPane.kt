@@ -32,14 +32,14 @@ import app.nine.ui.components.SegmentedTabs
 import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
 
-/** Ширина левой колонки со списком чатов. */
+/** Width of the left column with the chat list. */
 val ChatListWidth = 360.dp
 
 /**
- * Левая колонка: заголовок, поиск, вкладки и список чатов.
- * @param chats уже отфильтрованные и отсортированные чаты для текущей вкладки
- * @param totalChats сколько чатов вообще есть, нужно только для текста пустого списка
- * @param profileMenu кнопка профиля с её меню: что в нём лежит, список чатов не знает
+ * The left column: title, search, tabs and the chat list.
+ * @param chats chats already filtered and sorted for the current tab
+ * @param totalChats how many chats there are in total, needed only for the empty-list text
+ * @param profileMenu the profile button with its menu: what is inside it, the chat list does not know
  */
 @Composable
 fun ChatListPane(
@@ -53,7 +53,7 @@ fun ChatListPane(
 ) {
     val type = NineTheme.typography
     GlassPanel(modifier.width(ChatListWidth)) {
-        // Маска лежит под списком по центру внизу и видна, пока чатов мало.
+        // The mask lies under the list at the bottom center and is visible while there are few chats.
         AnonymityMask(
             Modifier
                 .align(Alignment.BottomCenter)
@@ -66,12 +66,12 @@ fun ChatListPane(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                BasicText("Чаты", style = type.screenTitle, modifier = Modifier.weight(1f))
+                BasicText("Chats", style = type.screenTitle, modifier = Modifier.weight(1f))
                 profileMenu()
-                IconAction(NineIcons.Search, "Поиск по чатам", ui::toggleChatSearch, shape = CircleShape, size = 36.dp)
+                IconAction(NineIcons.Search, "Search chats", ui::toggleChatSearch, shape = CircleShape, size = 36.dp)
                 IconAction(
                     icon = NineIcons.PlusCircle,
-                    description = "Новый чат",
+                    description = "New chat",
                     onClick = onNewChat,
                     tint = NineColors.TextPrimary,
                     shape = CircleShape,
@@ -82,7 +82,7 @@ fun ChatListPane(
                 SearchField(
                     value = ui.chatSearch,
                     onValueChange = { ui.chatSearch = it },
-                    placeholder = "Поиск",
+                    placeholder = "Search",
                     modifier = Modifier.padding(start = 22.dp, end = 22.dp, bottom = 14.dp),
                 )
             }

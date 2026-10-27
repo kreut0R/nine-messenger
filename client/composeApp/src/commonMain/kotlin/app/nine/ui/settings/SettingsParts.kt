@@ -27,10 +27,10 @@ import app.nine.ui.components.pressable
 import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
 
-/** Цвет плитки с иконкой. Рабочие настройки цветные, красная у необратимых, серая у тех, которых ещё нет. */
+/** The color of the icon tile. Working settings are colored, red for irreversible ones, gray for those that do not exist yet. */
 enum class Tone { Green, Blue, Amber, Red, Neutral }
 
-/** Страница настроек: большой заголовок и блоки под ним. Блоки отделяются друг от друга через [SettingsDivider]. */
+/** A settings page: a big title and blocks under it. Blocks are separated from each other with [SettingsDivider]. */
 @Composable
 fun SettingsPage(title: String, content: @Composable ColumnScope.() -> Unit) {
     Column(Modifier.fillMaxWidth()) {
@@ -40,7 +40,7 @@ fun SettingsPage(title: String, content: @Composable ColumnScope.() -> Unit) {
     }
 }
 
-/** Блок страницы: жирный подзаголовок и строки под ним. */
+/** A page block: a bold subtitle and rows under it. */
 @Composable
 fun Subsection(title: String, content: @Composable ColumnScope.() -> Unit) {
     Column(Modifier.fillMaxWidth().padding(vertical = 22.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -55,8 +55,8 @@ fun SettingsDivider() {
 }
 
 /**
- * Строка настройки: плитка с иконкой, название и пояснение, справа то, чем её меняют.
- * @param below элемент под пояснением, если справа он не умещается (например, выбор из пяти вариантов)
+ * A settings row: an icon tile, a name and an explanation, and on the right what changes it.
+ * @param below an element under the explanation, if it does not fit on the right (for example, a choice of five options)
  */
 @Composable
 fun FeatureRow(
@@ -99,11 +99,11 @@ private fun IconTile(icon: ImageVector, tone: Tone) {
     }
 }
 
-/** Пометка у настройки, которой ещё нет. Её показывают, чтобы было видно, что будет, но не выдают за рабочую. */
+/** A mark on a setting that does not exist yet. It is shown so that it is visible what is coming, but is not passed off as working. */
 @Composable
 fun SoonBadge() {
     BasicText(
-        "Скоро",
+        "Soon",
         style = NineTheme.typography.stamp,
         modifier = Modifier
             .background(NineColors.Control, RoundedCornerShape(6.dp))
@@ -111,15 +111,15 @@ fun SoonBadge() {
     )
 }
 
-/** Строка с пометкой «Скоро». */
+/** A row with the "Soon" mark. */
 @Composable
 fun SoonRow(icon: ImageVector, title: String, description: String) {
     FeatureRow(icon, title, description, trailing = { SoonBadge() })
 }
 
 /**
- * Кнопка в правой части строки. [danger] красит текст красным: так отмечают то, что нельзя отменить.
- * Выключенная кнопка тусклая и не нажимается.
+ * A button on the right side of a row. [danger] colors the text red: that marks what cannot be undone.
+ * A disabled button is dim and cannot be pressed.
  */
 @Composable
 fun RowButton(text: String, onClick: () -> Unit, danger: Boolean = false, enabled: Boolean = true) {
@@ -142,7 +142,7 @@ fun RowButton(text: String, onClick: () -> Unit, danger: Boolean = false, enable
     )
 }
 
-/** Подпись и пояснение над полем: так выглядят и поле только для чтения, и поле имени. */
+/** A label and an explanation above a field: this is how both the read-only field and the name field look. */
 @Composable
 fun FieldBlock(label: String, helper: String, content: @Composable () -> Unit) {
     val type = NineTheme.typography
@@ -154,7 +154,7 @@ fun FieldBlock(label: String, helper: String, content: @Composable () -> Unit) {
     }
 }
 
-/** Поле только для чтения с подписью и пояснением. Текст можно выделить и скопировать. */
+/** A read-only field with a label and an explanation. The text can be selected and copied. */
 @Composable
 fun ReadOnlyField(label: String, helper: String, value: String, action: @Composable () -> Unit = {}) {
     val type = NineTheme.typography

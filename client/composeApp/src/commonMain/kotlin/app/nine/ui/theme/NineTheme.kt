@@ -5,7 +5,7 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 
-/** Подключает шрифт и цвет выделения текста. Всё приложение должно находиться внутри этой функции. */
+/** Sets up the font and the text selection color. The whole app must live inside this function. */
 @Composable
 fun NineTheme(content: @Composable () -> Unit) {
     val typography = rememberTypography()

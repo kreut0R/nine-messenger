@@ -23,15 +23,15 @@ import app.nine.ui.platform.SystemClipboard
 import app.nine.ui.theme.NineTheme
 import kotlinx.coroutines.delay
 
-/** Как часто проверяем, не пора ли заблокироваться. Достаточно часто, чтобы блокировка по сворачиванию была «сразу». */
+/** How often to check whether it is time to lock. Often enough for lock-on-minimize to feel "instant". */
 private const val AutoLockCheckMillis = 500L
 
 /**
- * Самый верхний уровень: пока аккаунт не открыт, показывает экран входа, после входа открывает мессенджер.
- * Репозиторий создаётся заново для каждой сессии, поэтому после блокировки в памяти не остаётся чужой переписки.
+ * The top level: while no account is open it shows the sign-in screen, after sign-in it opens the messenger.
+ * The repository is created anew for each session, so after a lock no conversations remain in memory.
  *
- * @param windowHidden свёрнуто ли окно. Это функция, а не значение: у свёрнутого окна кадры могут не рисоваться,
- *   и пока ничего не перерисовывается, новое значение через параметр не дошло бы, а блокировка не сработала бы.
+ * @param windowHidden whether the window is minimized. It is a function, not a value: a minimized window may not draw frames,
+ *   and while nothing is redrawn, a new value passed as a parameter would not arrive and the lock would not fire.
  */
 @Composable
 fun NineRoot(
@@ -56,7 +56,7 @@ fun NineRoot(
         session = null
     }
 
-    // Опрос по таймеру, а не по состоянию: блокировка по бездействию не связана ни с одним событием интерфейса.
+    // Polling on a timer, not on state: the idle lock is not tied to any UI event.
     LaunchedEffect(open, data.settings.autoLock) {
         while (true) {
             if (shouldAutoLock(data.settings.autoLock, time.nowMillis() - lastActivity, windowHidden())) {

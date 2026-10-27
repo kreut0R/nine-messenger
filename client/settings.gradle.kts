@@ -10,8 +10,8 @@ pluginManagement {
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
-        // Compose Multiplatform опирается на библиотеки androidx, которые лежат только в Google Maven.
-        // Фильтр не даёт этому репозиторию подсунуть что-нибудь, кроме них.
+        // Compose Multiplatform relies on androidx libraries that live only in Google Maven.
+        // The filter keeps this repository from serving anything other than them.
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")

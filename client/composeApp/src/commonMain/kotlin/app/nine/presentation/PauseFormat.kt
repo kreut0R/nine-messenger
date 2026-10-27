@@ -1,6 +1,6 @@
 package app.nine.presentation
 
-/** Сколько ещё ждать, в виде «м:сс». Округляет вверх, чтобы на экране не появлялось «0:00» раньше времени. */
+/** How much longer to wait, as "m:ss". Rounds up so that "0:00" never appears on screen too early. */
 fun formatPause(remainingMillis: Long): String {
     val seconds = ((remainingMillis.coerceAtLeast(0) + 999) / 1000)
     val minutes = seconds / 60

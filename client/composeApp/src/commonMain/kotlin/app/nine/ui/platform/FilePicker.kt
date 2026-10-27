@@ -1,10 +1,10 @@
 package app.nine.ui.platform
 
-/** Выбор файла средствами системы. Интерфейс не знает, как выглядит окно выбора: это дело конкретной платформы. */
+/** File choosing by the system. The interface does not know how the chooser looks: that is up to the specific platform. */
 interface FilePicker {
-    /** Предлагает выбрать место и записывает туда [bytes]. Возвращает false, если человек отменил или записать не вышло. */
+    /** Offers to pick a place and writes [bytes] there. Returns false if the person canceled or the write failed. */
     fun save(suggestedName: String, bytes: ByteArray): Boolean
 
-    /** Предлагает выбрать файл и возвращает его содержимое. Null, если человек отменил или файл не прочитался. */
+    /** Offers to pick a file and returns its contents. Null if the person canceled or the file could not be read. */
     fun open(): ByteArray?
 }

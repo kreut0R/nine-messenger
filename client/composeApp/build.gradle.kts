@@ -8,8 +8,8 @@ plugins {
 }
 
 kotlin {
-    // Сейчас клиент собирается только для ПК. Android и iOS добавятся рядом
-    // как новые цели, весь код из commonMain переиспользуется без изменений.
+    // For now the client is built for desktop only. Android and iOS will be added alongside
+    // as new targets, and all the code in commonMain is reused unchanged.
     jvm("desktop")
 
     sourceSets {
@@ -28,9 +28,9 @@ kotlin {
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
-                // Нужен, чтобы корутины работали на потоке интерфейса Swing/Skia.
+                // Needed so that coroutines work on the Swing/Skia UI thread.
                 implementation(libs.kotlinx.coroutines.swing)
-                // Argon2id для ключа из кода доступа и Ed25519 для ключа входа: в JDK нет ни того, ни другого.
+                // Argon2id for the key from the access code and Ed25519 for the sign-in key: the JDK has neither.
                 implementation(libs.bouncycastle)
             }
         }

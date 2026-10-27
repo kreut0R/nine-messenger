@@ -28,6 +28,7 @@ class LockoutTest {
     fun shortCodesAreRejected() {
         assertFalse(isAcceptableAccessCode("1234567"))
         assertTrue(isAcceptableAccessCode("12345678"))
-        assertTrue(isAcceptableAccessCode("лес и река"))
+        // A pass phrase in any script is fine, not only Latin.
+        assertTrue(isAcceptableAccessCode("森と川と空と海の歌"))
     }
 }

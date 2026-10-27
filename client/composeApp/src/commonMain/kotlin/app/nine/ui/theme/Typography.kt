@@ -16,7 +16,7 @@ import app.nine.resources.inter_regular
 import app.nine.resources.inter_semibold
 import org.jetbrains.compose.resources.Font
 
-/** Все текстовые стили приложения. Иерархия: имя заметнее превью, время тише всех. */
+/** All text styles of the app. The hierarchy: the name is more prominent than the preview, the time is quietest. */
 @Immutable
 class NineTypography(private val family: FontFamily) {
     private fun style(size: Float, weight: FontWeight, lineHeight: Float = size * 1.4f, spacing: Float = 0f) = TextStyle(
@@ -33,7 +33,7 @@ class NineTypography(private val family: FontFamily) {
     val chatName = style(16f, FontWeight.SemiBold)
     val rowTitle = style(15f, FontWeight.Medium)
 
-    // Окно настроек: заголовок страницы, подзаголовок блока, название пункта и подпись группы в боковом меню.
+    // The settings window: the page title, the block subtitle, the item name and the group label in the sidebar.
     val pageTitle = style(26f, FontWeight.SemiBold, lineHeight = 32f, spacing = -0.4f)
     val subsectionTitle = style(16f, FontWeight.SemiBold)
     val featureTitle = style(15f, FontWeight.SemiBold)
@@ -55,15 +55,15 @@ class NineTypography(private val family: FontFamily) {
     val avatarLetter = style(16f, FontWeight.SemiBold).copy(color = androidx.compose.ui.graphics.Color.White)
 }
 
-private val LocalNineTypography = compositionLocalOf<NineTypography> { error("NineTheme не подключена") }
+private val LocalNineTypography = compositionLocalOf<NineTypography> { error("NineTheme is not installed") }
 
-/** Доступ к стилям из любого места внутри [NineTheme]. */
+/** Access to the styles from anywhere inside [NineTheme]. */
 object NineTheme {
     val typography: NineTypography
         @Composable @ReadOnlyComposable get() = LocalNineTypography.current
 }
 
-/** Шрифт Inter лежит в ресурсах приложения, чтобы вид не зависел от шрифтов, установленных в системе. */
+/** The Inter font lives in the app resources, so the look does not depend on the fonts installed in the system. */
 @Composable
 internal fun rememberTypography(): NineTypography {
     val regular = Font(Res.font.inter_regular, FontWeight.Normal)

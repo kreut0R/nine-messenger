@@ -38,9 +38,9 @@ import app.nine.ui.theme.NineTheme
 private val FieldShape = RoundedCornerShape(10.dp)
 
 /**
- * Однострочное поле с рамкой и подписью сверху. [secret] прячет набираемое точками, а значок глаза справа
- * показывает набранное до повторного нажатия. Enter вызывает [onSubmit]. [filled] заливает поле серым вместо рамки:
- * так оно выглядит в настройках.
+ * A one-line field with a border and a label on top. [secret] hides what is typed behind dots, and the eye icon on the right
+ * shows what was typed until pressed again. Enter calls [onSubmit]. [filled] fills the field with gray instead of a border:
+ * this is how it looks in settings.
  */
 @Composable
 fun FormField(
@@ -93,7 +93,7 @@ fun FormField(
             if (secret) {
                 IconAction(
                     icon = if (revealed) NineIcons.EyeOff else NineIcons.Eye,
-                    description = if (revealed) "Скрыть" else "Показать",
+                    description = if (revealed) "Hide" else "Show",
                     onClick = { revealed = !revealed },
                     tint = NineColors.TextTertiary,
                     size = 30.dp,

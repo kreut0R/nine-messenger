@@ -10,20 +10,20 @@ import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
-/** Во сколько обходится одна проверка кода. Сохраняется рядом с данными, поэтому позже его можно будет повысить. */
+/** The cost of one code check. Saved next to the data, so it can be raised later. */
 @Serializable
 data class Argon2Cost(val memoryKiB: Int, val iterations: Int, val parallelism: Int) {
     companion object {
-        /** 64 МиБ и три прохода: около четверти секунды на обычном компьютере, перебор на видеокартах дорожает из-за памяти. */
+        /** 64 MiB and three passes: about a quarter of a second on an ordinary computer; GPU brute force gets pricier because of the memory. */
         val Default = Argon2Cost(memoryKiB = 64 * 1024, iterations = 3, parallelism = 1)
     }
 }
 
 /**
- * Все примитивы шифрования в одном месте. Своих алгоритмов здесь нет: AES-256-GCM из JDK и Argon2id из BouncyCastle.
+ * All encryption primitives in one place. There are no home-made algorithms here: AES-256-GCM from the JDK and Argon2id from BouncyCastle.
  *
- * Зашифрованный блок выглядит так: версия формата (1 байт), случайный nonce (12 байт), шифртекст с тегом подлинности.
- * Каждый раз берётся новый случайный nonce, при ключе на все записи это безопасно до миллиардов записей.
+ * An encrypted block looks like this: format version (1 byte), random nonce (12 bytes), ciphertext with the authentication tag.
+ * A fresh random nonce is taken every time; with one key for all records this is safe up to billions of records.
  */
 internal object Crypto {
     private const val FormatVersion: Byte = 1
@@ -37,8 +37,8 @@ internal object Crypto {
     fun randomBytes(size: Int): ByteArray = ByteArray(size).also(random::nextBytes)
 
     /**
-     * Шифрует [plaintext]. Строка [purpose] входит в проверку подлинности, но не в шифртекст:
-     * блок, зашифрованный для одной цели, не откроется как блок для другой, даже с тем же ключом.
+     * Encrypts [plaintext]. The [purpose] string is part of the authentication but not of the ciphertext:
+     * a block encrypted for one purpose will not open as a block for another, even with the same key.
      */
     fun seal(key: ByteArray, plaintext: ByteArray, purpose: String): ByteArray {
         val nonce = randomBytes(NonceSize)
@@ -46,7 +46,7 @@ internal object Crypto {
         return byteArrayOf(FormatVersion) + nonce + cipher.doFinal(plaintext)
     }
 
-    /** Расшифровывает блок. Возвращает null, если ключ не тот или данные повреждены: отличить одно от другого нельзя. */
+    /** Decrypts a block. Returns null if the key is wrong or the data is damaged: the two cannot be told apart. */
     fun open(key: ByteArray, sealed: ByteArray, purpose: String): ByteArray? {
         if (sealed.size < 1 + NonceSize + TagBits / 8 || sealed[0] != FormatVersion) return null
         val nonce = sealed.copyOfRange(1, 1 + NonceSize)
@@ -57,7 +57,7 @@ internal object Crypto {
         }
     }
 
-    /** Превращает код доступа в ключ. Код приводится к одной форме записи, чтобы «é» из двух символов совпало с «é» из одного. */
+    /** Turns an access code into a key. The code is normalized to one form, so "e" plus a combining accent matches the single character "é". */
     fun deriveKey(code: String, salt: ByteArray, cost: Argon2Cost): ByteArray {
         val parameters = Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
             .withVersion(Argon2Parameters.ARGON2_VERSION_13)

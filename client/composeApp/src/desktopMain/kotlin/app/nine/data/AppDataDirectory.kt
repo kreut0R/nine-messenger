@@ -3,8 +3,8 @@ package app.nine.data
 import java.io.File
 
 /**
- * Папка, где приложение хранит свои данные, по правилам текущей системы:
- * Windows: %APPDATA%\Nine, macOS: ~/Library/Application Support/Nine, остальные: $XDG_DATA_HOME/nine или ~/.local/share/nine.
+ * The folder where the app keeps its data, following the rules of the current system:
+ * Windows: %APPDATA%\Nine, macOS: ~/Library/Application Support/Nine, others: $XDG_DATA_HOME/nine or ~/.local/share/nine.
  */
 fun appDataDirectory(): File {
     val home = System.getProperty("user.home")

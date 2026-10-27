@@ -13,7 +13,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-/** Знак приложения: звёздочка из трёх толстых линий с круглыми концами, пересекающихся в центре. */
+/** The app mark: an asterisk of three thick lines with round ends, crossing in the center. */
 @Composable
 fun NineLogo(color: Color, modifier: Modifier = Modifier, size: Dp = 28.dp) {
     Canvas(modifier.size(size)) {

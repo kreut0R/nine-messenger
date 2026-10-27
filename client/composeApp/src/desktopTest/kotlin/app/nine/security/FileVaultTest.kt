@@ -19,12 +19,12 @@ class FileVaultTest {
     private val directory: File = Files.createTempDirectory("nine-vault-test").toFile()
     private val time = FakeTime(now = 1_000)
 
-    // Дешёвый Argon2, чтобы тесты шли быстро. Боевая стоимость проверяется только тем, что она записывается рядом с данными.
+    // Cheap Argon2 so the tests run fast. The production cost is checked only by being written next to the data.
     private val cheap = Argon2Cost(memoryKiB = 64, iterations = 1, parallelism = 1)
     private fun vault() = FileVault(directory, time, cheap)
 
-    private val code = "верный код 2026"
-    private val secretName = "СекретноеИмяСобеседника"
+    private val code = "correct code 2026"
+    private val secretName = "SecretPeerName"
 
     private fun chats(name: String = secretName) =
         MessengerData(chats = listOf(Chat(ChatId("c-1"), name, createdAtMillis = 5)))
@@ -67,8 +67,8 @@ class FileVaultTest {
 
         directory.listFiles()!!.forEach { file ->
             val text = file.readBytes().toString(Charsets.ISO_8859_1) + file.readText()
-            assertFalse(secretName in file.readText(), "${file.name} содержит имя собеседника")
-            assertFalse(code in text, "${file.name} содержит код доступа")
+            assertFalse(secretName in file.readText(), "${file.name} contains the peer name")
+            assertFalse(code in text, "${file.name} contains the access code")
         }
         assertEquals(setOf("vault.json", "identity.enc", "messenger.enc"), directory.list()!!.toSet())
     }
@@ -84,16 +84,16 @@ class FileVaultTest {
         vault().createAccount(code).lock()
 
         for (left in 4 downTo 1) {
-            assertEquals(UnlockResult.WrongCode(attemptsBeforePause = left), vault().unlock("неверный код"))
+            assertEquals(UnlockResult.WrongCode(attemptsBeforePause = left), vault().unlock("wrong code"))
         }
-        val paused = assertIs<UnlockResult.Paused>(vault().unlock("неверный код"))
+        val paused = assertIs<UnlockResult.Paused>(vault().unlock("wrong code"))
         assertEquals(time.now + 30_000, paused.untilMillis)
     }
 
     @Test
     fun correctCodeIsRefusedDuringPauseAndAcceptedAfterIt() {
         vault().createAccount(code).lock()
-        repeat(Lockout.FreeAttempts) { vault().unlock("неверный код") }
+        repeat(Lockout.FreeAttempts) { vault().unlock("wrong code") }
 
         assertIs<UnlockResult.Paused>(vault().unlock(code))
         time.now += 30_001
@@ -104,22 +104,22 @@ class FileVaultTest {
     @Test
     fun failedAttemptsSurviveRestartAndResetAfterSuccess() {
         vault().createAccount(code).lock()
-        repeat(3) { vault().unlock("неверный код") }
+        repeat(3) { vault().unlock("wrong code") }
 
-        // Новый экземпляр хранилища, как после перезапуска приложения: счётчик не обнуляется.
-        assertEquals(UnlockResult.WrongCode(attemptsBeforePause = 1), vault().unlock("неверный код"))
+        // A new vault instance, as after an app restart: the counter does not reset.
+        assertEquals(UnlockResult.WrongCode(attemptsBeforePause = 1), vault().unlock("wrong code"))
 
         unlocked(vault().unlock(code)).lock()
-        assertEquals(UnlockResult.WrongCode(attemptsBeforePause = 4), vault().unlock("неверный код"))
+        assertEquals(UnlockResult.WrongCode(attemptsBeforePause = 4), vault().unlock("wrong code"))
     }
 
     @Test
     fun pauseGrowsWithEveryFailureAfterTheFreeAttempts() {
         vault().createAccount(code).lock()
-        repeat(Lockout.FreeAttempts) { vault().unlock("неверный код") }
+        repeat(Lockout.FreeAttempts) { vault().unlock("wrong code") }
 
         time.now += 30_001
-        val second = assertIs<UnlockResult.Paused>(vault().unlock("неверный код"))
+        val second = assertIs<UnlockResult.Paused>(vault().unlock("wrong code"))
 
         assertEquals(time.now + 60_000, second.untilMillis)
     }
@@ -127,7 +127,7 @@ class FileVaultTest {
     @Test
     fun damagedKeyFileIsReportedInsteadOfCrashing() {
         vault().createAccount(code).lock()
-        File(directory, "vault.json").writeText("{ не json")
+        File(directory, "vault.json").writeText("{ not json")
 
         assertEquals(UnlockResult.Damaged, vault().unlock(code))
     }
@@ -160,21 +160,21 @@ class FileVaultTest {
     @Test
     fun keyBackupRestoresTheSameAccountOnAnotherDevice() {
         val original = vault().createAccount(code)
-        val backup = original.exportKeyBackup("пароль для копии")
+        val backup = original.exportKeyBackup("backup password")
         val otherDirectory = Files.createTempDirectory("nine-vault-restore").toFile()
 
         val restored = assertIs<RestoreResult.Restored>(
-            FileVault(otherDirectory, time, cheap).restoreAccount(backup, "пароль для копии", "новый код 2027"),
+            FileVault(otherDirectory, time, cheap).restoreAccount(backup, "backup password", "new code 2027"),
         ).session
 
         assertEquals(original.accountId, restored.accountId)
-        assertIs<UnlockResult.Unlocked>(FileVault(otherDirectory, time, cheap).unlock("новый код 2027"))
+        assertIs<UnlockResult.Unlocked>(FileVault(otherDirectory, time, cheap).unlock("new code 2027"))
     }
 
     @Test
     fun backupDoesNotContainTheKeyInTheOpen() {
         val session = vault().createAccount(code)
-        val backup = session.exportKeyBackup("пароль для копии")
+        val backup = session.exportKeyBackup("backup password")
         val identityFile = File(directory, "identity.enc")
 
         assertFalse(identityFile.readBytes().contentEquals(backup))
@@ -185,9 +185,9 @@ class FileVaultTest {
     fun wrongBackupPasswordLeavesTheCurrentAccountUntouched() {
         val session = vault().createAccount(code)
         session.store.save(chats())
-        val backup = session.exportKeyBackup("пароль для копии")
+        val backup = session.exportKeyBackup("backup password")
 
-        assertEquals(RestoreResult.WrongBackupPassword, vault().restoreAccount(backup, "не тот пароль", "новый код 2027"))
+        assertEquals(RestoreResult.WrongBackupPassword, vault().restoreAccount(backup, "not the password", "new code 2027"))
 
         assertEquals(chats(), unlocked(vault().unlock(code)).store.load())
     }
@@ -196,29 +196,29 @@ class FileVaultTest {
     fun randomBytesAreNotABackup() {
         vault().createAccount(code)
 
-        assertEquals(RestoreResult.NotABackup, vault().restoreAccount(byteArrayOf(1, 2, 3), "пароль", "новый код 2027"))
-        assertEquals(RestoreResult.NotABackup, vault().restoreAccount("{}".toByteArray(), "пароль", "новый код 2027"))
+        assertEquals(RestoreResult.NotABackup, vault().restoreAccount(byteArrayOf(1, 2, 3), "password", "new code 2027"))
+        assertEquals(RestoreResult.NotABackup, vault().restoreAccount("{}".toByteArray(), "password", "new code 2027"))
     }
 
     @Test
     fun restoringOverAnExistingAccountReplacesItWithTheBackupKey() {
         val other = Files.createTempDirectory("nine-vault-source").toFile()
         val source = FileVault(other, time, cheap).createAccount(code)
-        val backup = source.exportKeyBackup("пароль для копии")
-        val here = vault().createAccount("другой код 2026")
+        val backup = source.exportKeyBackup("backup password")
+        val here = vault().createAccount("another code 2026")
         here.store.save(chats())
 
-        val restored = assertIs<RestoreResult.Restored>(vault().restoreAccount(backup, "пароль для копии", "забытый старый код заменён")).session
+        val restored = assertIs<RestoreResult.Restored>(vault().restoreAccount(backup, "backup password", "forgotten old code replaced")).session
 
         assertEquals(source.accountId, restored.accountId)
-        assertEquals(MessengerData(), restored.store.load(), "переписка с этого устройства при восстановлении теряется")
+        assertEquals(MessengerData(), restored.store.load(), "the conversations on this device are lost on restore")
     }
 
     @Test
     fun wipeRemovesEverythingFromTheDevice() {
         val session = vault().createAccount(code)
         session.store.save(chats())
-        File(directory, "messenger.json").writeText("старьё")
+        File(directory, "messenger.json").writeText("old junk")
 
         vault().wipe()
 
@@ -232,7 +232,7 @@ class FileVaultTest {
         session.store.save(chats())
         session.lock()
 
-        // Ключ в памяти затёрт нулями: прочитать переписку через старую сессию уже нельзя.
+        // The key in memory is zeroed: the conversations can no longer be read through the old session.
         assertEquals(MessengerData(), session.store.load())
     }
 
@@ -243,8 +243,8 @@ class FileVaultTest {
         val before = File(directory, "messenger.enc").readBytes()
         session.lock()
 
-        // Автоблокировка может сработать между нажатием клавиши и её обработкой: запись нулевым ключом испортила бы файл.
-        session.store.save(chats("Другое имя"))
+        // The autolock can fire between a key press and its handling: a write with the zero key would corrupt the file.
+        session.store.save(chats("Another name"))
         session.store.load()
 
         assertTrue(before.contentEquals(File(directory, "messenger.enc").readBytes()))
@@ -257,11 +257,11 @@ class FileVaultTest {
         val session = vault().createAccount(code)
         session.store.save(chats())
 
-        assertEquals(ChangeCodeResult.Changed, session.changeAccessCode(code, "новый код 2027"))
+        assertEquals(ChangeCodeResult.Changed, session.changeAccessCode(code, "new code 2027"))
         session.lock()
 
         assertEquals(UnlockResult.WrongCode(attemptsBeforePause = 4), vault().unlock(code))
-        val reopened = unlocked(vault().unlock("новый код 2027"))
+        val reopened = unlocked(vault().unlock("new code 2027"))
         assertEquals(session.accountId, reopened.accountId)
         assertEquals(chats(), reopened.store.load())
     }
@@ -270,7 +270,7 @@ class FileVaultTest {
     fun wrongCurrentCodeChangesNothingAndCountsAsAFailedAttempt() {
         val session = vault().createAccount(code)
 
-        assertEquals(ChangeCodeResult.WrongCode(attemptsBeforePause = 4), session.changeAccessCode("не тот код", "новый код 2027"))
+        assertEquals(ChangeCodeResult.WrongCode(attemptsBeforePause = 4), session.changeAccessCode("not this code", "new code 2027"))
         session.lock()
 
         assertIs<UnlockResult.Unlocked>(vault().unlock(code))
@@ -279,24 +279,24 @@ class FileVaultTest {
     @Test
     fun changingTheCodeIsPausedAfterTooManyWrongOnes() {
         val session = vault().createAccount(code)
-        repeat(Lockout.FreeAttempts - 1) { session.changeAccessCode("не тот код", "новый код 2027") }
+        repeat(Lockout.FreeAttempts - 1) { session.changeAccessCode("not this code", "new code 2027") }
 
-        val paused = assertIs<ChangeCodeResult.Paused>(session.changeAccessCode("не тот код", "новый код 2027"))
+        val paused = assertIs<ChangeCodeResult.Paused>(session.changeAccessCode("not this code", "new code 2027"))
         assertEquals(time.now + 30_000, paused.untilMillis)
-        // Пока идёт пауза, даже верный текущий код не принимается.
-        assertIs<ChangeCodeResult.Paused>(session.changeAccessCode(code, "новый код 2027"))
+        // While the pause lasts even the correct current code is not accepted.
+        assertIs<ChangeCodeResult.Paused>(session.changeAccessCode(code, "new code 2027"))
         assertIs<UnlockResult.Paused>(vault().unlock(code))
     }
 
     @Test
     fun successfulChangeResetsTheFailedAttempts() {
         val session = vault().createAccount(code)
-        repeat(3) { session.changeAccessCode("не тот код", "новый код 2027") }
+        repeat(3) { session.changeAccessCode("not this code", "new code 2027") }
 
-        assertEquals(ChangeCodeResult.Changed, session.changeAccessCode(code, "новый код 2027"))
+        assertEquals(ChangeCodeResult.Changed, session.changeAccessCode(code, "new code 2027"))
         session.lock()
 
-        assertEquals(UnlockResult.WrongCode(attemptsBeforePause = 4), vault().unlock("не тот код"))
+        assertEquals(UnlockResult.WrongCode(attemptsBeforePause = 4), vault().unlock("not this code"))
     }
 
     @Test
@@ -316,14 +316,14 @@ class FileVaultTest {
         val identityBefore = File(directory, "identity.enc").readBytes()
         val chatsBefore = File(directory, "messenger.enc").readBytes()
 
-        session.changeAccessCode(code, "новый код 2027")
+        session.changeAccessCode(code, "new code 2027")
 
-        // Меняется только обёртка главного ключа: остальные файлы остаются теми же.
+        // Only the wrapper of the master key changes: the other files stay the same.
         assertTrue(identityBefore.contentEquals(File(directory, "identity.enc").readBytes()))
         assertTrue(chatsBefore.contentEquals(File(directory, "messenger.enc").readBytes()))
         directory.listFiles()!!.forEach { file ->
             val text = file.readBytes().toString(Charsets.ISO_8859_1) + file.readText()
-            assertFalse("новый код 2027" in text, "${file.name} содержит новый код")
+            assertFalse("new code 2027" in text, "${file.name} contains the new code")
         }
     }
 

@@ -39,15 +39,15 @@ import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
 import kotlinx.coroutines.launch
 
-/** Сколько знаков кода аккаунта показывать в меню профиля: две группы по четыре и пробел между ними. */
+/** How many characters of the account code to show in the profile menu: two groups of four and a space between them. */
 private const val ShortCodeLength = 9
 
-/** Если окно уже этого, правая колонка скрывается, чтобы переписке хватило места. */
+/** If the window is narrower than this, the right column is hidden so the conversation has enough room. */
 private val ContactPaneMinWindowWidth = 1150.dp
 
 /**
- * Корень интерфейса: три колонки (чаты, переписка, контакт) и окно создания чата поверх них.
- * Настройки занимают всё окно вместо колонок.
+ * The root of the UI: three columns (chats, conversation, contact) and the new-chat dialog over them.
+ * Settings take the whole window instead of the columns.
  */
 @Composable
 fun NineApp(
@@ -67,14 +67,14 @@ fun NineApp(
         val scope = rememberCoroutineScope()
         val selected = data.chats.firstOrNull { it.id == ui.selectedChatId }
 
-        // Открытый чат считается прочитанным: сбрасываем счётчик и когда выбрали чат, и когда в него пришло новое.
+        // An open chat counts as read: reset the counter both when the chat is selected and when a new message arrives in it.
         LaunchedEffect(selected?.id, selected?.unreadCount) {
             selected?.let { repository.markRead(it.id) }
         }
 
         val section = settingsSection
-        // Настройки это отдельный экран на всё окно, а не слой над чатами: пока они открыты, чаты не рисуются.
-        // Выбранный чат, поиск и черновики лежат в `ui` выше и переживают переход.
+        // Settings are a separate full-window screen, not a layer over the chats: while they are open, the chats are not drawn.
+        // The selected chat, the search and the drafts live in `ui` above and survive the transition.
         if (section != null) {
             SettingsScreen(
                 initial = section,
@@ -137,7 +137,7 @@ fun NineApp(
                                 onBubbleColorChange = repository::setBubbleColor,
                                 onToggleArchive = {
                                     repository.setArchived(selected.id, !selected.archived)
-                                    // Чат ушёл из текущего списка, поэтому закрываем его, а не оставляем «висеть» без строки.
+                                    // The chat has left the current list, so close it instead of leaving it "hanging" without a row.
                                     ui.selectChat(null)
                                 },
                                 modifier = Modifier.fillMaxHeight(),

@@ -35,13 +35,13 @@ import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
 import kotlinx.datetime.TimeZone
 
-// Разделитель начинается там, где начинается текст, то есть после аватарки и отступов.
+// The divider starts where the text starts, that is after the avatar and the padding.
 private val DividerStart = 74.dp
 
 /**
- * Строка списка: аватарка, имя со временем и превью последнего сообщения со счётчиком.
- * Выбранная строка залита зелёным, при наведении мыши другие строки слабо подсвечиваются.
- * Минимальное скругление (6 dp) нужно, чтобы подсветка не упиралась в края панели.
+ * A list row: avatar, name with time, and the preview of the last message with the counter.
+ * The selected row is filled with green, on mouse hover the other rows are lightly highlighted.
+ * The minimal rounding (6 dp) is needed so the highlight does not run into the panel edges.
  */
 @Composable
 fun ChatRow(chat: Chat, selected: Boolean, time: TimeSource, onClick: () -> Unit) {
@@ -68,7 +68,7 @@ fun ChatRow(chat: Chat, selected: Boolean, time: TimeSource, onClick: () -> Unit
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     BasicText(chat.title, style = type.chatName, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                    // Времени нет у пустого чата: показывать момент его создания как «последнее сообщение» было бы неверно.
+                    // An empty chat has no time: showing its creation moment as the "last message" would be wrong.
                     if (last != null) {
                         BasicText(formatListTime(last.sentAtMillis, time.nowMillis(), zone), style = type.time, maxLines = 1)
                     }
@@ -83,7 +83,7 @@ fun ChatRow(chat: Chat, selected: Boolean, time: TimeSource, onClick: () -> Unit
                             )
                         }
                         BasicText(
-                            text = last?.text?.replace('\n', ' ') ?: "Нет сообщений",
+                            text = last?.text?.replace('\n', ' ') ?: "No messages",
                             style = if (last == null) type.time else type.chatPreview,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,

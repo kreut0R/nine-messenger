@@ -7,7 +7,7 @@ import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.UnsupportedFlavorException
 import java.io.IOException
 
-/** Буфер обмена через AWT. Если система его не отдаёт (например, занят другим приложением), молча ничего не делает. */
+/** The clipboard through AWT. If the system does not hand it out (for example, another app holds it), quietly does nothing. */
 class AwtSystemClipboard : SystemClipboard {
     private val clipboard get() = Toolkit.getDefaultToolkit().systemClipboard
 
@@ -15,7 +15,7 @@ class AwtSystemClipboard : SystemClipboard {
         try {
             clipboard.setContents(StringSelection(text), null)
         } catch (error: IllegalStateException) {
-            System.err.println("Nine: буфер обмена недоступен: ${error.message}")
+            System.err.println("Nine: clipboard unavailable: ${error.message}")
         }
     }
 

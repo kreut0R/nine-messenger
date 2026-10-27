@@ -9,15 +9,15 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
 /**
- * Хранит данные в одном JSON-файле. Для прототипа этого достаточно: файл можно открыть и прочитать глазами.
- * Не рассчитан на несколько запущенных копий приложения одновременно.
+ * Keeps the data in one JSON file. Enough for the prototype: the file can be opened and read by eye.
+ * Not designed for several copies of the app running at the same time.
  */
 class FileMessengerStore(directory: File) : MessengerStore {
     private val file = File(directory, "messenger.json")
 
     private val json = Json {
         prettyPrint = true
-        // Новые версии приложения могут дописывать поля. Старая версия не должна падать, встретив незнакомое.
+        // New app versions may add fields. An old version must not crash on meeting an unknown one.
         ignoreUnknownKeys = true
         encodeDefaults = true
     }
@@ -39,19 +39,19 @@ class FileMessengerStore(directory: File) : MessengerStore {
         try {
             writeFileAtomically(file, json.encodeToString(MessengerData.serializer(), data).toByteArray())
         } catch (error: IOException) {
-            // Падать из-за диска хуже, чем не сохранить: сообщение остаётся на экране. Ошибку видно в консоли.
-            System.err.println("Nine: не удалось сохранить данные в $file: ${error.message}")
+            // Crashing because of the disk is worse than not saving: the message stays on screen. The error is visible in the console.
+            System.err.println("Nine: could not save data to $file: ${error.message}")
         }
     }
 
-    /** Повреждённый файл не удаляем, а откладываем рядом: вдруг из него ещё можно что-то достать вручную. */
+    /** A damaged file is not deleted but set aside next to it: maybe something can still be recovered by hand. */
     private fun keepBrokenFile() {
         val broken = File(file.parentFile, "${file.name}.broken")
         try {
             Files.move(file.toPath(), broken.toPath(), StandardCopyOption.REPLACE_EXISTING)
-            System.err.println("Nine: файл данных не читается, он сохранён как $broken, начинаем с пустого состояния.")
+            System.err.println("Nine: the data file cannot be read, it was saved as $broken, starting from an empty state.")
         } catch (error: IOException) {
-            System.err.println("Nine: файл данных не читается и не удалось его отложить: ${error.message}")
+            System.err.println("Nine: the data file cannot be read and could not be set aside: ${error.message}")
         }
     }
 }

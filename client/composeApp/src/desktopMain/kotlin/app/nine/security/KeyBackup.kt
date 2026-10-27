@@ -6,8 +6,8 @@ import kotlinx.serialization.json.Json
 import java.util.Base64
 
 /**
- * Копия ключа входа в файле. Шифруется отдельным паролем, не кодом доступа:
- * копию кладут вне устройства, и она должна открываться там, где кода уже нет.
+ * A copy of the sign-in key in a file. Encrypted with a separate password, not the access code:
+ * the copy is kept outside the device and must open where there is no code any more.
  */
 @Serializable
 internal class KeyBackup(
@@ -32,7 +32,7 @@ internal class KeyBackup(
             return json.encodeToString(serializer(), backup).toByteArray()
         }
 
-        /** Читает копию. Если файл не похож на копию, возвращает [NotABackup], если пароль не тот, то [WrongPassword]. */
+        /** Reads a backup. If the file does not look like a backup, returns [NotABackup]; if the password is wrong, [WrongPassword]. */
         fun read(bytes: ByteArray, password: String): ReadResult {
             val backup = try {
                 json.decodeFromString(serializer(), bytes.decodeToString())

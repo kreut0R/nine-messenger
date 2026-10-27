@@ -68,7 +68,7 @@ class TimelineTest {
 
     @Test
     fun dayBoundaryFollowsGivenTimeZone() {
-        // 22:30 UTC — это уже следующий день в Москве (UTC+3).
+        // 22:30 UTC is already the next day in Moscow (UTC+3).
         val items = buildTimeline(listOf(message("a", Author.Me, "2026-10-25T22:30:00Z")), TimeZone.of("Europe/Moscow"))
 
         assertEquals(TimelineItem.DayHeader(LocalDate(2026, 10, 26)), items.first())

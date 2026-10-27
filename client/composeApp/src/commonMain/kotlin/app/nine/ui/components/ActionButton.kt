@@ -17,8 +17,8 @@ import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
 
 /**
- * Текстовая кнопка для окон. Главная действует зелёным цветом, остальные тише.
- * [danger] красит текст красным: так отмечают то, что нельзя отменить.
+ * A text button for dialogs. The primary one acts in green, the others are quieter.
+ * [danger] colors the text red: that marks what cannot be undone.
  */
 @Composable
 fun ActionButton(
@@ -50,7 +50,7 @@ fun ActionButton(
     )
 }
 
-/** Кнопка на всю ширину формы. Главная залита цветом своих сообщений, вторая обведена. */
+/** A button across the whole width of the form. The primary one is filled with the own-message color, the second is outlined. */
 @Composable
 fun WideButton(
     text: String,

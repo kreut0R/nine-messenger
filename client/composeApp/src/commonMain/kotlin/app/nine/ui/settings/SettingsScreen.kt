@@ -49,16 +49,16 @@ import app.nine.ui.platform.FilePicker
 import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
 
-/** Ширина бокового меню. */
+/** Width of the sidebar. */
 private val SidebarWidth = 290.dp
 
-/** Самая широкая колонка страницы: дальше строки на большом экране вытягивались бы слишком длинно. */
+/** The widest page column: beyond it rows on a big screen would stretch too long. */
 private val PageMaxWidth = 960.dp
 
 /**
- * Настройки на весь экран: слева меню по группам, справа страница выбранного раздела.
- * Открывается сразу на нужном разделе, потому что в него ведут и «Профиль», и «Настройки» из меню профиля.
- * Закрывается стрелкой «Чаты» в углу и по Escape.
+ * Settings across the whole screen: a grouped menu on the left, the page of the chosen section on the right.
+ * Opens straight on the needed section, because both "Profile" and "Settings" in the profile menu lead into it.
+ * Closed by the "Chats" arrow in the corner and by Escape.
  */
 @Composable
 fun SettingsScreen(
@@ -83,7 +83,7 @@ fun SettingsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(NineColors.Panel)
-            // Экран лежит поверх чатов и ловит все касания, иначе они дошли бы до панелей под ним.
+            // The screen lies over the chats and catches all touches, otherwise they would reach the panels under it.
             .pointerInput(Unit) { detectTapGestures { } }
             .focusRequester(focus)
             .focusable()
@@ -97,7 +97,7 @@ fun SettingsScreen(
         Box(Modifier.width(1.dp).fillMaxHeight().background(NineColors.Hairline))
         Box(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())) {
             Column(Modifier.widthIn(max = PageMaxWidth).fillMaxWidth().padding(horizontal = 56.dp, vertical = 44.dp)) {
-                // Страница создаётся заново при смене раздела: у каждой свои формы, и незавершённый ввод не должен переезжать.
+                // The page is recreated when the section changes: each has its own forms, and unfinished input must not move over.
                 key(section) {
                     when (section) {
                         SettingsSection.Profile -> ProfilePage(displayName, session, filePicker, onDisplayNameChange, onCopy, onErase)
@@ -147,7 +147,7 @@ private fun BackButton(onClick: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         NineIcon(NineIcons.ChevronLeft, tint = NineColors.TextSecondary, size = 20.dp)
-        BasicText("Чаты", style = NineTheme.typography.navItem.copy(color = NineColors.TextSecondary))
+        BasicText("Chats", style = NineTheme.typography.navItem.copy(color = NineColors.TextSecondary))
     }
 }
 
@@ -159,7 +159,7 @@ private fun NavItem(item: SettingsSection, selected: Boolean, onClick: () -> Uni
         modifier = Modifier
             .fillMaxWidth()
             .height(40.dp)
-            // У выбранного пункта фон особый, и наведение его не меняет.
+            // The selected item has a special background, and hover does not change it.
             .pressable(onClick, RoundedCornerShape(10.dp), hoverBackground = if (selected) background else NineColors.Control, background = background)
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,

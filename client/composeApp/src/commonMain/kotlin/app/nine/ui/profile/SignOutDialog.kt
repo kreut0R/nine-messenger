@@ -17,7 +17,7 @@ import app.nine.ui.settings.EraseConfirmation
 import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
 
-/** Вопрос «выйти и стереть?» для пункта «Выйти» в меню профиля. Тот же вопрос задают и настройки. */
+/** The "sign out and erase?" question for the "Sign out" menu item. Settings ask the same question. */
 @Composable
 fun SignOutDialog(onErase: () -> Unit, onDismiss: () -> Unit) {
     Modal(onDismiss) {
@@ -30,7 +30,7 @@ fun SignOutDialog(onErase: () -> Unit, onDismiss: () -> Unit) {
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            BasicText("Выйти и стереть данные?", style = NineTheme.typography.profileName)
+            BasicText("Sign out and erase data?", style = NineTheme.typography.profileName)
             EraseConfirmation(onErase, onCancel = onDismiss)
         }
     }

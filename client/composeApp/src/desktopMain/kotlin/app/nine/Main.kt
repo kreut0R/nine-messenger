@@ -10,7 +10,7 @@ import app.nine.data.appDataDirectory
 import app.nine.security.FileVault
 import java.awt.Dimension
 
-/** Точка входа настольного приложения: собирает хранилище ключей и открывает окно. */
+/** Entry point of the desktop app: builds the key storage and opens the window. */
 fun main() = application {
     val vault = remember { FileVault(appDataDirectory()) }
     val filePicker = remember { AwtFilePicker() }
@@ -21,7 +21,7 @@ fun main() = application {
         title = "Nine",
         state = windowState,
     ) {
-        // Ниже этих размеров три колонки уже не помещаются.
+        // Below these sizes the three columns no longer fit.
         window.minimumSize = Dimension(900, 600)
         NineRoot(vault, filePicker, clipboard, windowHidden = { windowState.isMinimized })
     }

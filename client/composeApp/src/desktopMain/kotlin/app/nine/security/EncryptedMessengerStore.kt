@@ -10,7 +10,7 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
-/** То же хранилище переписки, что и файловое, но в файле лежит только шифртекст. Ключ даёт открытая сессия. */
+/** The same conversation storage as the file one, but the file holds only ciphertext. The key comes from an open session. */
 internal class EncryptedMessengerStore(private val file: File, private val masterKey: ByteArray) : MessengerStore {
     private val json = Json {
         ignoreUnknownKeys = true
@@ -18,8 +18,8 @@ internal class EncryptedMessengerStore(private val file: File, private val maste
     }
 
     /**
-     * После блокировки ключ в памяти затёрт нулями. Если бы запись всё же дошла сюда (скажем, нажатие клавиши в тот же миг,
-     * когда сработала автоблокировка), файл оказался бы зашифрован нулевым ключом, а настоящий ключ его уже не открыл бы.
+     * After a lock the key in memory is overwritten with zeros. If a write still got here (say, a key press at the very moment
+     * the autolock fired), the file would be encrypted with a zero key, and the real key could no longer open it.
      */
     @Volatile
     private var closed = false
@@ -53,19 +53,19 @@ internal class EncryptedMessengerStore(private val file: File, private val maste
             val plain = json.encodeToString(MessengerData.serializer(), data).toByteArray()
             writeFileAtomically(file, Crypto.seal(masterKey, plain, Purpose))
         } catch (error: IOException) {
-            // Как и у файлового хранилища: сообщение остаётся на экране, ошибку видно в консоли.
-            System.err.println("Nine: не удалось сохранить данные в $file: ${error.message}")
+            // As with the file store: the message stays on screen, the error is visible in the console.
+            System.err.println("Nine: could not save data to $file: ${error.message}")
         }
     }
 
-    /** Повреждённый файл не стираем, а откладываем рядом: вдруг его ещё получится вернуть. */
+    /** A damaged file is not erased but set aside next to it: maybe it can still be recovered. */
     private fun keepBrokenFile() {
         val broken = File(file.parentFile, "${file.name}.broken")
         try {
             Files.move(file.toPath(), broken.toPath(), StandardCopyOption.REPLACE_EXISTING)
-            System.err.println("Nine: зашифрованные данные не читаются, файл сохранён как $broken, начинаем с пустого состояния.")
+            System.err.println("Nine: the encrypted data cannot be read, the file was saved as $broken, starting from an empty state.")
         } catch (error: IOException) {
-            System.err.println("Nine: зашифрованные данные не читаются и не удалось их отложить: ${error.message}")
+            System.err.println("Nine: the encrypted data cannot be read and could not be set aside: ${error.message}")
         }
     }
 

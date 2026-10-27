@@ -35,7 +35,7 @@ import app.nine.ui.theme.NineTheme
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 
-/** Кнопка-иконка с подсветкой при наведении. Для круглых кнопок передайте [shape] = CircleShape. */
+/** An icon button with a hover highlight. For round buttons pass [shape] = CircleShape. */
 @Composable
 fun IconAction(
     icon: ImageVector,
@@ -57,7 +57,7 @@ fun IconAction(
     }
 }
 
-/** Однострочное поле с иконкой лупы. Используется для поиска по чатам и по переписке. */
+/** A one-line field with a magnifier icon. Used for searching chats and conversations. */
 @Composable
 fun SearchField(
     value: String,
@@ -95,8 +95,8 @@ fun SearchField(
 }
 
 /**
- * Переключатель из нескольких вкладок на серой полосе. Выбранная вкладка плавно «переезжает».
- * Между невыбранными соседями рисуется тонкий разделитель, как в макете.
+ * A switch of several tabs on a gray strip. The selected tab "slides" smoothly.
+ * A thin divider is drawn between unselected neighbors, as in the mockup.
  */
 @Composable
 fun SegmentedTabs(

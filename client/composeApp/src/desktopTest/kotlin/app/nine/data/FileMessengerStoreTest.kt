@@ -29,10 +29,10 @@ class FileMessengerStoreTest {
             chats = listOf(
                 Chat(
                     id = ChatId("c-1"),
-                    title = "Лис",
+                    title = "Fox",
                     createdAtMillis = 10,
                     archived = true,
-                    messages = listOf(Message("m-1", Author.Me, "Привет\nмир", sentAtMillis = 20, delivery = Delivery.Sent)),
+                    messages = listOf(Message("m-1", Author.Me, "Hello\nworld", sentAtMillis = 20, delivery = Delivery.Sent)),
                 ),
             ),
             bubbleColor = BubbleColor.Olive,
@@ -54,10 +54,10 @@ class FileMessengerStoreTest {
 
     @Test
     fun brokenFileIsSetAsideAndStateStartsEmpty() {
-        File(directory, "messenger.json").writeText("{ это не json")
+        File(directory, "messenger.json").writeText("{ this is not json")
 
         assertEquals(MessengerData(), store.load())
-        assertTrue(File(directory, "messenger.json.broken").exists(), "повреждённый файл должен сохраниться рядом")
+        assertTrue(File(directory, "messenger.json.broken").exists(), "the damaged file must be kept next to it")
         assertFalse(File(directory, "messenger.json").exists())
     }
 

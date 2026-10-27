@@ -2,7 +2,7 @@ package app.nine.domain
 
 import kotlin.time.Clock
 
-/** Источник текущего времени. Нужен, чтобы в тестах подставлять фиксированное время. */
+/** Source of the current time. Lets tests substitute a fixed time. */
 fun interface TimeSource {
     fun nowMillis(): Long
 

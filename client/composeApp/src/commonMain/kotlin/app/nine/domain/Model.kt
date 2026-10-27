@@ -3,24 +3,24 @@ package app.nine.domain
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 
-// Модели помечены @Serializable, чтобы хранить их в файле как есть, без отдельного слоя DTO.
-// Для прототипа этого достаточно. Когда появится сервер, формат передачи по сети будет описан отдельно.
+// Models are marked @Serializable so they can be stored in a file as they are, without a separate DTO layer.
+// That is enough for the prototype. Once there is a server, the wire format will be described separately.
 
-/** Идентификатор чата. Это случайная строка, а не имя собеседника: имя можно будет менять. */
+/** Chat identifier. A random string, not the peer's name: the name can change. */
 @Serializable
 @JvmInline
 value class ChatId(val value: String)
 
-/** Короткий код чата для показа человеку: первые 16 символов группами по 4, например «9F3A 41C2 B7D0 E615». */
+/** Short chat code for showing to a person: the first 16 characters in groups of 4, for example "9F3A 41C2 B7D0 E615". */
 val ChatId.displayCode: String
     get() = value.filter { it.isLetterOrDigit() }.uppercase().take(16).chunked(4).joinToString(" ")
 
 enum class Author { Me, Peer }
 
 /**
- * Что известно о доставке сообщения.
- * Пока сервера нет, все сообщения остаются [Local]. Галочки в интерфейсе рисуются только для [Sent] и [Read],
- * чтобы не обещать доставку, которой не было.
+ * What is known about a message's delivery.
+ * While there is no server, every message stays [Local]. Ticks in the UI are drawn only for [Sent] and [Read],
+ * so that the app never promises a delivery that did not happen.
  */
 enum class Delivery { Local, Sent, Read }
 
@@ -29,7 +29,7 @@ data class Message(
     val id: String,
     val author: Author,
     val text: String,
-    /** Время отправки в миллисекундах от 1970 года (UTC). В местное время переводится только при показе. */
+    /** Send time in milliseconds since 1970 (UTC). Converted to local time only when displayed. */
     val sentAtMillis: Long,
     val delivery: Delivery = Delivery.Local,
 )
@@ -45,35 +45,35 @@ data class Chat(
 ) {
     val lastMessage: Message? get() = messages.lastOrNull()
 
-    /** По этому времени чаты сортируются в списке: у пустого чата это момент создания. */
+    /** Chats are sorted in the list by this time; for an empty chat it is the creation moment. */
     val lastActivityMillis: Long get() = lastMessage?.sentAtMillis ?: createdAtMillis
 }
 
-/** Цвет собственных сообщений. Сам цвет задаётся в слое интерфейса, здесь хранится только выбор. */
+/** Color of own messages. The color itself is defined in the UI layer; only the choice is stored here. */
 enum class BubbleColor { Forest, Emerald, Olive, Moss, Graphite }
 
-/** Когда приложение блокируется само. Правила проверки лежат в `security/AutoLockPolicy.kt`. */
+/** When the app locks itself. The rules are in `security/AutoLockPolicy.kt`. */
 enum class AutoLock { OnMinimize, OneMinute, FiveMinutes, FifteenMinutes, Never }
 
-/** Настройки, которые меняет человек. Лежат в том же зашифрованном файле, что и переписка. */
+/** Settings the person changes. Stored in the same encrypted file as the conversations. */
 @Serializable
 data class AppSettings(
     val autoLock: AutoLock = AutoLock.FiveMinutes,
-    /** Убирать из буфера обмена то, что скопировано из Nine, через полминуты. */
+    /** Remove what was copied from Nine from the clipboard after half a minute. */
     val clearClipboard: Boolean = true,
 )
 
-/** Всё, что приложение хранит на устройстве. */
+/** Everything the app stores on the device. */
 @Serializable
 data class MessengerData(
-    /** Версия формата файла. Понадобится, когда формат придётся менять и переносить старые данные. */
+    /** File format version. Needed when the format has to change and old data has to be migrated. */
     val version: Int = 1,
     val chats: List<Chat> = emptyList(),
     val bubbleColor: BubbleColor = BubbleColor.Forest,
     val settings: AppSettings = AppSettings(),
-    /** Имя, под которым человека будут видеть собеседники. Пустое, пока он его не задал. */
+    /** The name peers will see the person under. Empty until they set one. */
     val displayName: String = "",
 )
 
-/** Самое длинное имя: дольше в строку списка и в шапку не помещается. */
+/** The longest name: anything longer does not fit in a list row or the header. */
 const val MaxDisplayNameLength = 40

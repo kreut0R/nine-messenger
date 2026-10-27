@@ -39,12 +39,12 @@ import app.nine.ui.theme.NineTheme
 import app.nine.ui.theme.color
 import app.nine.ui.theme.label
 
-/** Ширина правой колонки с данными контакта. */
+/** Width of the right column with the contact details. */
 val ContactPaneWidth = 316.dp
 
 /**
- * Правая колонка: кто это, поиск по переписке, цвет своих сообщений и перенос чата в архив.
- * Здесь нет вещей, которые пока не работают (общие фото, проверка ключей): они появятся вместе с функциями.
+ * The right column: who this is, search in the conversation, the color of own messages and moving the chat to the archive.
+ * There is nothing here that does not work yet (shared photos, key verification): it will appear together with the features.
  */
 @Composable
 fun ContactPane(
@@ -69,8 +69,8 @@ fun ContactPane(
                 BasicText(chat.title, style = type.profileName, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 BasicText(chat.id.displayCode, style = type.code)
             }
-            SearchField(messageSearch, onMessageSearchChange, placeholder = "Поиск в переписке")
-            Section("Цвет сообщений") {
+            SearchField(messageSearch, onMessageSearchChange, placeholder = "Search in conversation")
+            Section("Message color") {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     BubbleColor.entries.forEach { color ->
                         Swatch(color, selected = color == bubbleColor, onClick = { onBubbleColorChange(color) })
@@ -90,7 +90,7 @@ private fun Section(title: String, content: @Composable () -> Unit) {
     }
 }
 
-/** Круглый образец цвета. У выбранного вокруг кружка рисуется светлое кольцо. */
+/** A round color swatch. The selected one gets a light ring drawn around the circle. */
 @Composable
 private fun Swatch(color: BubbleColor, selected: Boolean, onClick: () -> Unit) {
     Box(
@@ -122,7 +122,7 @@ private fun ArchiveButton(archived: Boolean, onClick: () -> Unit) {
         contentAlignment = Alignment.Center,
     ) {
         BasicText(
-            text = if (archived) "Вернуть из архива" else "Перенести в архив",
+            text = if (archived) "Restore from archive" else "Move to archive",
             style = NineTheme.typography.button.copy(color = NineColors.TextSecondary),
         )
     }

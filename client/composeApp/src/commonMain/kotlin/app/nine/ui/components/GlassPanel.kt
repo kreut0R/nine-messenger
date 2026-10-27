@@ -13,13 +13,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import app.nine.ui.theme.NineColors
 
-/** Радиус скругления панелей, пузырей и полей. Углы намеренно острые, круглыми остаются только аватарки. */
+/** Corner radius of panels, bubbles and fields. The corners are deliberately sharp, only avatars stay round. */
 val PanelShape = RoundedCornerShape(12.dp)
 
 /**
- * Стеклянная панель: тёмная подложка, тонкий светлый контур и блик на верхней кромке.
- * Настоящего размытия того, что под панелью, здесь нет: Compose Multiplatform пока не умеет размывать фон.
- * Стекло передаётся контуром и бликами, а шапка с полем ввода в переписке полупрозрачны.
+ * A glass panel: a dark backing, a thin light outline and a highlight on the top edge.
+ * There is no real blur of what is under the panel: Compose Multiplatform cannot blur the background yet.
+ * The glass is conveyed by the outline and highlights, and the header and the input field in a conversation are translucent.
  */
 @Composable
 fun GlassPanel(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {

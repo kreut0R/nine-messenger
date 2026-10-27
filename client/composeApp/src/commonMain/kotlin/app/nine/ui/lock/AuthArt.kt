@@ -27,8 +27,8 @@ private val ArtShape = RoundedCornerShape(20.dp)
 private val ArtBase = Color(0xFF050505)
 
 /**
- * Левая картинка экрана входа: чёрное поле с размытыми серыми пятнами, знак приложения сверху и подпись снизу.
- * Размытие стоит только на пятнах, поэтому текст остаётся резким.
+ * The left picture of the sign-in screen: a black field with blurred gray spots, the app mark on top and a caption at the bottom.
+ * Only the spots are blurred, so the text stays sharp.
  */
 @Composable
 fun AuthArt(eyebrow: String, headline: String, modifier: Modifier = Modifier) {

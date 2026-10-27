@@ -51,9 +51,9 @@ import kotlinx.coroutines.withContext
 private enum class Stage { Create, Unlock, Restore }
 
 /**
- * Экран до входа в приложение: создание аккаунта, ввод кода доступа или восстановление из копии ключа.
- * Какой экран показать первым, решает наличие аккаунта на устройстве. Проверка кода идёт на фоновом потоке:
- * Argon2id намеренно медленный, и окно не должно зависать.
+ * The screen before entering the app: creating an account, entering the access code or restoring from a key backup.
+ * Which screen to show first is decided by whether the device has an account. The code check runs on a background thread:
+ * Argon2id is deliberately slow, and the window must not freeze.
  */
 @Composable
 fun LockScreen(vault: Vault, filePicker: FilePicker, time: TimeSource, onOpened: (Session) -> Unit) {
@@ -64,8 +64,8 @@ fun LockScreen(vault: Vault, filePicker: FilePicker, time: TimeSource, onOpened:
         GlassPanel(Modifier.fillMaxWidth(0.88f).widthIn(max = 1040.dp).fillMaxHeight(0.88f).heightIn(min = 520.dp, max = 680.dp)) {
             Row(Modifier.fillMaxSize().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 AuthArt(
-                    eyebrow = "Без телефона и почты",
-                    headline = "Переписка, которую читаете только вы",
+                    eyebrow = "No phone, no email",
+                    headline = "Conversations only you can read",
                     modifier = Modifier.weight(0.9f).fillMaxHeight(),
                 )
                 Box(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()), contentAlignment = Alignment.Center) {
@@ -114,16 +114,16 @@ private fun CreateCode(vault: Vault, onOpened: (Session) -> Unit, onRestore: () 
     }
 
     Heading(
-        "Создать аккаунт",
-        "Он создаётся на этом устройстве, телефон и почта не нужны. Код доступа открывает приложение. " +
-            "Лучше фраза из нескольких слов: забытый код восстановить нельзя.",
+        "Create an account",
+        "It is created on this device, no phone number or email needed. The access code opens the app. " +
+            "A phrase of several words is better: a forgotten code cannot be recovered.",
     )
-    FormField(code, { code = it }, "Придумайте код", Modifier.focusRequester(focus), label = "Код доступа", secret = true)
-    FormField(repeat, { repeat = it }, "Повторите код", label = "Повторите код", secret = true, onSubmit = submit)
+    FormField(code, { code = it }, "Choose a code", Modifier.focusRequester(focus), label = "Access code", secret = true)
+    FormField(repeat, { repeat = it }, "Repeat the code", label = "Repeat the code", secret = true, onSubmit = submit)
     ProblemText(if (code.isEmpty() || repeat.isEmpty()) null else problem)
-    WideButton(if (busy) "Создаём…" else "Начать", onClick = submit, enabled = problem == null && !busy)
+    WideButton(if (busy) "Creating…" else "Get started", onClick = submit, enabled = problem == null && !busy)
     OrDivider()
-    WideButton("Восстановить из копии ключа", onClick = onRestore, primary = false)
+    WideButton("Restore from a key backup", onClick = onRestore, primary = false)
 }
 
 @Composable
@@ -137,7 +137,7 @@ private fun Unlock(vault: Vault, time: TimeSource, onOpened: (Session) -> Unit, 
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { focus.requestFocus() }
 
-    // Пока идёт пауза, обратный отсчёт тикает на экране, а по её окончании сообщение пропадает.
+    // While a pause lasts, the countdown ticks on screen, and when it ends the message disappears.
     LaunchedEffect(pausedUntil) {
         while (time.nowMillis() < pausedUntil) {
             now = time.nowMillis()
@@ -157,23 +157,23 @@ private fun Unlock(vault: Vault, time: TimeSource, onOpened: (Session) -> Unit, 
                 code = ""
                 when (result) {
                     is UnlockResult.Unlocked -> onOpened(result.session)
-                    is UnlockResult.WrongCode -> message = "Код неверный. Попыток до паузы: ${result.attemptsBeforePause}."
+                    is UnlockResult.WrongCode -> message = "Wrong code. Attempts before a pause: ${result.attemptsBeforePause}."
                     is UnlockResult.Paused -> {
                         message = null
                         pausedUntil = result.untilMillis
                     }
-                    UnlockResult.Damaged -> message = "Файл с ключами повреждён. Остаётся восстановить аккаунт из копии ключа."
+                    UnlockResult.Damaged -> message = "The key file is damaged. The account can still be restored from a key backup."
                 }
             }
         }
     }
 
-    Heading("С возвращением", "Введите код доступа, чтобы открыть переписку.")
-    FormField(code, { code = it }, "Код доступа", Modifier.focusRequester(focus), label = "Код доступа", secret = true, onSubmit = submit)
-    ProblemText(if (paused) "Слишком много попыток. Подождите ${formatPause(pausedUntil - now)}." else message)
-    WideButton(if (busy) "Проверяем…" else "Войти", onClick = submit, enabled = code.isNotEmpty() && !busy && !paused)
+    Heading("Welcome back", "Enter the access code to open your conversations.")
+    FormField(code, { code = it }, "Access code", Modifier.focusRequester(focus), label = "Access code", secret = true, onSubmit = submit)
+    ProblemText(if (paused) "Too many attempts. Wait ${formatPause(pausedUntil - now)}." else message)
+    WideButton(if (busy) "Checking…" else "Sign in", onClick = submit, enabled = code.isNotEmpty() && !busy && !paused)
     OrDivider()
-    WideButton("Восстановить из копии ключа", onClick = onForgot, primary = false)
+    WideButton("Restore from a key backup", onClick = onForgot, primary = false)
 }
 
 @Composable
@@ -198,38 +198,38 @@ private fun Restore(vault: Vault, filePicker: FilePicker, onOpened: (Session) ->
                 busy = false
                 when (result) {
                     is RestoreResult.Restored -> onOpened(result.session)
-                    RestoreResult.WrongBackupPassword -> message = "Пароль копии неверный."
-                    RestoreResult.NotABackup -> message = "Этот файл не похож на копию ключа."
+                    RestoreResult.WrongBackupPassword -> message = "The backup password is wrong."
+                    RestoreResult.NotABackup -> message = "This file does not look like a key backup."
                 }
             }
         }
     }
 
     Heading(
-        "Восстановление",
+        "Restore",
         if (vault.hasAccount()) {
-            "Аккаунт вернётся из копии ключа, а на этом устройстве задайте новый код. Переписка, которая сейчас на устройстве, будет стёрта."
+            "The account will come back from the key backup, and you set a new code on this device. The conversations currently on this device will be erased."
         } else {
-            "Выберите файл копии ключа, введите его пароль и задайте код доступа для этого устройства."
+            "Choose the key backup file, enter its password and set an access code for this device."
         },
     )
     WideButton(
-        if (backup == null) "Выбрать файл копии" else "Файл выбран, выбрать другой",
+        if (backup == null) "Choose backup file" else "File chosen, choose another",
         onClick = { filePicker.open()?.let { backup = it; message = null } },
         primary = false,
     )
-    FormField(backupPassword, { backupPassword = it }, "Пароль копии", label = "Пароль копии", secret = true)
-    FormField(code, { code = it }, "Новый код", label = "Новый код доступа", secret = true)
-    FormField(repeat, { repeat = it }, "Повторите код", label = "Повторите код", secret = true, onSubmit = submit)
+    FormField(backupPassword, { backupPassword = it }, "Backup password", label = "Backup password", secret = true)
+    FormField(code, { code = it }, "New code", label = "New access code", secret = true)
+    FormField(repeat, { repeat = it }, "Repeat the code", label = "Repeat the code", secret = true, onSubmit = submit)
     ProblemText(message ?: if (code.isEmpty() || repeat.isEmpty()) null else problem)
-    WideButton(if (busy) "Восстанавливаем…" else "Восстановить", onClick = submit, enabled = ready)
-    WideButton("Назад", onClick = onBack, primary = false)
+    WideButton(if (busy) "Restoring…" else "Restore", onClick = submit, enabled = ready)
+    WideButton("Back", onClick = onBack, primary = false)
 }
 
-/** Что не так с введённым кодом, или null, если всё хорошо. */
+/** What is wrong with the entered code, or null if all is well. */
 private fun codeProblem(code: String, repeat: String): String? = when {
-    !isAcceptableAccessCode(code) -> "Код короче $MinAccessCodeLength символов."
-    code != repeat -> "Коды не совпадают."
+    !isAcceptableAccessCode(code) -> "The code is shorter than $MinAccessCodeLength characters."
+    code != repeat -> "The codes do not match."
     else -> null
 }
 
@@ -240,12 +240,12 @@ private fun ProblemText(text: String?) {
     }
 }
 
-/** Тонкая линия со словом «или» посередине: отделяет главное действие от запасного. */
+/** A thin line with the word "or" in the middle: separates the main action from the fallback. */
 @Composable
 private fun OrDivider() {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Box(Modifier.weight(1f).height(1.dp).background(NineColors.Hairline))
-        BasicText("или", style = NineTheme.typography.time)
+        BasicText("or", style = NineTheme.typography.time)
         Box(Modifier.weight(1f).height(1.dp).background(NineColors.Hairline))
     }
 }

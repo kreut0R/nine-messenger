@@ -22,9 +22,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import app.nine.ui.theme.NineColors
 
 /**
- * Окно поверх всего приложения: затемнение и [content] по центру. Закрывается по Escape и по клику на затемнение.
- * @param focusOnOpen забирать ли фокус при открытии, чтобы Escape работал, пока ни одно поле не выбрано.
- *   Окну, которое само ставит фокус на своё поле, нужно передать false.
+ * A window over the whole app: a dim layer and [content] in the center. Closes on Escape and on a click on the dim layer.
+ * @param focusOnOpen whether to take focus on open so that Escape works while no field is selected.
+ *   A window that puts focus on its own field itself should pass false.
  */
 @Composable
 fun Modal(onDismiss: () -> Unit, focusOnOpen: Boolean = true, content: @Composable BoxScope.() -> Unit) {
@@ -34,7 +34,7 @@ fun Modal(onDismiss: () -> Unit, focusOnOpen: Boolean = true, content: @Composab
         modifier = Modifier
             .fillMaxSize()
             .background(NineColors.Scrim)
-            // Затемнение ловит все касания, иначе они дошли бы до панелей под окном.
+            // The dim layer catches all touches, otherwise they would reach the panels under the window.
             .pointerInput(Unit) { detectTapGestures { onDismiss() } }
             .then(if (focusOnOpen) Modifier.focusRequester(focus).focusable() else Modifier)
             .onPreviewKeyEvent { event ->
@@ -44,7 +44,7 @@ fun Modal(onDismiss: () -> Unit, focusOnOpen: Boolean = true, content: @Composab
             },
         contentAlignment = Alignment.Center,
     ) {
-        // Клик внутри окна не должен закрывать его через затемнение.
+        // A click inside the window must not close it through the dim layer.
         Box(Modifier.pointerInput(Unit) { detectTapGestures { } }, content = content)
     }
 }

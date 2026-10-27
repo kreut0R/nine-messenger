@@ -16,15 +16,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.nine.ui.theme.NineTheme
 
-// Приглушённые тона, чтобы аватарки не спорили с зелёным акцентом.
+// Muted tones so the avatars do not compete with the green accent.
 private val avatarColors = listOf(
     Color(0xFF3F6B4D), Color(0xFF47607A), Color(0xFF6B6A48), Color(0xFF5F6668),
     Color(0xFF5A5070), Color(0xFF4E5560), Color(0xFF7A5F43), Color(0xFF6B4F5C),
 )
 
 /**
- * Круглая аватарка с первой буквой имени. Цвет выбирается по [seed] (id чата), а не по имени,
- * поэтому не меняется, если чат переименуют.
+ * A round avatar with the first letter of the name. The color is chosen by [seed] (the chat id), not by the name,
+ * so it does not change if the chat is renamed.
  */
 @Composable
 fun Avatar(name: String, seed: String, size: Dp, modifier: Modifier = Modifier) {
@@ -43,7 +43,7 @@ fun Avatar(name: String, seed: String, size: Dp, modifier: Modifier = Modifier) 
     }
 }
 
-/** Размеры аватарок, повторяющиеся в разных частях экрана. */
+/** Avatar sizes that repeat in different parts of the screen. */
 object AvatarSize {
     val Small = 32.dp
     val Header = 42.dp

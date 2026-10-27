@@ -1,4 +1,4 @@
-# Gradle и Kotlin
+# Gradle and Kotlin
 .gradle/
 .kotlin/
 build/
@@ -9,5 +9,5 @@ build/
 *.iml
 local.properties
 
-# ОС
+# OS
 .DS_Store

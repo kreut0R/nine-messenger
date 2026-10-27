@@ -2,20 +2,20 @@ package app.nine.ui.platform
 
 import kotlinx.coroutines.delay
 
-/** Буфер обмена системы. Нужен только для копирования из Nine и для очистки после него. */
+/** The system clipboard. Needed only for copying from Nine and for clearing afterwards. */
 interface SystemClipboard {
     fun copy(text: String)
 
-    /** Текст из буфера. Null, если там пусто или лежит что-то другое. */
+    /** The text from the clipboard. Null if it is empty or holds something else. */
     fun text(): String?
 }
 
-/** Как долго скопированное из Nine лежит в буфере, если очистка включена. */
+/** How long what was copied from Nine stays in the clipboard, if clearing is on. */
 const val ClipboardForgetMillis = 30_000L
 
 /**
- * Копирует [text] и через [forgetAfterMillis] убирает его из буфера, но только если там всё ещё он:
- * то, что человек успел скопировать позже, не трогаем.
+ * Copies [text] and removes it from the clipboard after [forgetAfterMillis], but only if it is still there:
+ * what the person managed to copy later is left alone.
  */
 suspend fun SystemClipboard.copyTemporarily(text: String, forgetAfterMillis: Long = ClipboardForgetMillis) {
     copy(text)

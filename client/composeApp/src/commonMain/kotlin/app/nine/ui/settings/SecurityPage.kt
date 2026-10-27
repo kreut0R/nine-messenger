@@ -36,7 +36,7 @@ import kotlinx.coroutines.withContext
 
 private enum class SecurityStep { Overview, ChangeCode }
 
-/** Страница «Безопасность»: автоблокировка и код доступа. Остальное из списка показано как «Скоро». */
+/** The "Security" page: autolock and the access code. The rest of the list is shown as "Soon". */
 @Composable
 fun SecurityPage(
     settings: AppSettings,
@@ -46,11 +46,11 @@ fun SecurityPage(
 ) {
     var step by remember { mutableStateOf(SecurityStep.Overview) }
     when (step) {
-        SecurityStep.Overview -> SettingsPage("Безопасность") {
-            Subsection("Вход") {
+        SecurityStep.Overview -> SettingsPage("Security") {
+            Subsection("Sign-in") {
                 FeatureRow(
                     icon = NineIcons.Clock,
-                    title = "Автоблокировка",
+                    title = "Autolock",
                     description = settings.autoLock.description,
                     tone = Tone.Blue,
                     below = {
@@ -65,27 +65,27 @@ fun SecurityPage(
                 )
                 FeatureRow(
                     icon = NineIcons.Key,
-                    title = "Код доступа",
-                    description = "Открывает приложение. Минимум $MinAccessCodeLength символов, лучше фраза из нескольких слов.",
+                    title = "Access code",
+                    description = "Opens the app. At least $MinAccessCodeLength characters, a phrase of several words is better.",
                     tone = Tone.Green,
-                ) { RowButton("Сменить", onClick = { step = SecurityStep.ChangeCode }) }
+                ) { RowButton("Change", onClick = { step = SecurityStep.ChangeCode }) }
             }
             SettingsDivider()
-            Subsection("Если вас заставляют открыть приложение") {
-                SoonRow(NineIcons.Warning, "Тревожный код", "Открывает подставной аккаунт, а настоящий остаётся скрытым.")
+            Subsection("If you are forced to open the app") {
+                SoonRow(NineIcons.Warning, "Duress code", "Opens a decoy account, while the real one stays hidden.")
                 SoonRow(
                     NineIcons.Trash,
-                    "Стирание после неудачных попыток",
-                    "Сотрёт данные после заданного числа неверных кодов. Будет выключено по умолчанию.",
+                    "Wipe after failed attempts",
+                    "Erases the data after a set number of wrong codes. Will be off by default.",
                 )
-                SoonRow(NineIcons.Alert, "Кнопка паники", "Мгновенно блокирует приложение и прячет его окно.")
+                SoonRow(NineIcons.Alert, "Panic button", "Instantly locks the app and hides its window.")
             }
             SettingsDivider()
-            Subsection("Экран") {
-                SoonRow(NineIcons.NoScreen, "Запрет скриншотов", "Только на телефоне.")
+            Subsection("Screen") {
+                SoonRow(NineIcons.NoScreen, "Block screenshots", "Phone only.")
             }
         }
-        SecurityStep.ChangeCode -> SettingsPage("Новый код доступа") {
+        SecurityStep.ChangeCode -> SettingsPage("New access code") {
             ChangeCodeForm(session, time, onDone = { step = SecurityStep.Overview })
         }
     }
@@ -93,20 +93,20 @@ fun SecurityPage(
 
 private val AutoLock.title: String
     get() = when (this) {
-        AutoLock.OnMinimize -> "Сразу"
-        AutoLock.OneMinute -> "1 мин"
-        AutoLock.FiveMinutes -> "5 мин"
-        AutoLock.FifteenMinutes -> "15 мин"
-        AutoLock.Never -> "Никогда"
+        AutoLock.OnMinimize -> "Instantly"
+        AutoLock.OneMinute -> "1 min"
+        AutoLock.FiveMinutes -> "5 min"
+        AutoLock.FifteenMinutes -> "15 min"
+        AutoLock.Never -> "Never"
     }
 
 private val AutoLock.description: String
     get() = when (this) {
-        AutoLock.OnMinimize -> "Приложение блокируется, как только окно свернули."
-        AutoLock.OneMinute -> "Приложение блокируется, если минуту ничего не делать."
-        AutoLock.FiveMinutes -> "Приложение блокируется, если 5 минут ничего не делать."
-        AutoLock.FifteenMinutes -> "Приложение блокируется, если 15 минут ничего не делать."
-        AutoLock.Never -> "Само не блокируется: закрывать доступ придётся вручную из меню профиля."
+        AutoLock.OnMinimize -> "The app locks as soon as the window is minimized."
+        AutoLock.OneMinute -> "The app locks if nothing is done for a minute."
+        AutoLock.FiveMinutes -> "The app locks if nothing is done for 5 minutes."
+        AutoLock.FifteenMinutes -> "The app locks if nothing is done for 15 minutes."
+        AutoLock.Never -> "Never locks by itself: access has to be closed manually from the profile menu."
     }
 
 @Composable
@@ -120,9 +120,9 @@ private fun ChangeCodeForm(session: Session, time: TimeSource, onDone: () -> Uni
     val scope = rememberCoroutineScope()
 
     val problem = when {
-        !isAcceptableAccessCode(newCode) -> "Новый код короче $MinAccessCodeLength символов."
-        newCode != repeat -> "Коды не совпадают."
-        newCode == current -> "Новый код совпадает с текущим."
+        !isAcceptableAccessCode(newCode) -> "The new code is shorter than $MinAccessCodeLength characters."
+        newCode != repeat -> "The codes do not match."
+        newCode == current -> "The new code is the same as the current one."
         else -> null
     }
     val canSubmit = current.isNotEmpty() && problem == null && !busy && !changed
@@ -131,7 +131,7 @@ private fun ChangeCodeForm(session: Session, time: TimeSource, onDone: () -> Uni
             busy = true
             refusal = null
             scope.launch {
-                // Argon2id намеренно медленный и вызывается дважды, поэтому не на потоке интерфейса.
+                // Argon2id is deliberately slow and is called twice, so not on the UI thread.
                 val result = withContext(Dispatchers.Default) { session.changeAccessCode(current, newCode) }
                 busy = false
                 when (result) {
@@ -141,10 +141,10 @@ private fun ChangeCodeForm(session: Session, time: TimeSource, onDone: () -> Uni
                         newCode = ""
                         repeat = ""
                     }
-                    is ChangeCodeResult.WrongCode -> refusal = "Текущий код неверный. Попыток до паузы: ${result.attemptsBeforePause}."
+                    is ChangeCodeResult.WrongCode -> refusal = "The current code is wrong. Attempts before a pause: ${result.attemptsBeforePause}."
                     is ChangeCodeResult.Paused ->
-                        refusal = "Слишком много неверных попыток. Подождите ${formatPause(result.untilMillis - time.nowMillis())}."
-                    ChangeCodeResult.Damaged -> refusal = "Файл с ключами не читается."
+                        refusal = "Too many wrong attempts. Wait ${formatPause(result.untilMillis - time.nowMillis())}."
+                    ChangeCodeResult.Damaged -> refusal = "The key file cannot be read."
                 }
             }
         }
@@ -152,19 +152,19 @@ private fun ChangeCodeForm(session: Session, time: TimeSource, onDone: () -> Uni
 
     val type = NineTheme.typography
     Column(Modifier.widthIn(max = 520.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        BasicText("Старый код перестанет открывать приложение. Забытый код восстановить нельзя.", style = type.chatPreview)
-        FormField(current, { current = it }, "Текущий код", secret = true, filled = true)
-        FormField(newCode, { newCode = it }, "Новый код", secret = true, filled = true)
-        FormField(repeat, { repeat = it }, "Повторите новый код", secret = true, filled = true, onSubmit = submit)
+        BasicText("The old code will stop opening the app. A forgotten code cannot be recovered.", style = type.chatPreview)
+        FormField(current, { current = it }, "Current code", secret = true, filled = true)
+        FormField(newCode, { newCode = it }, "New code", secret = true, filled = true)
+        FormField(repeat, { repeat = it }, "Repeat the new code", secret = true, filled = true, onSubmit = submit)
         when {
-            changed -> BasicText("Код изменён.", style = type.chatPreview.copy(color = NineColors.Accent))
+            changed -> BasicText("Code changed.", style = type.chatPreview.copy(color = NineColors.Accent))
             refusal != null -> BasicText(refusal.orEmpty(), style = type.chatPreview.copy(color = NineColors.Danger))
             newCode.isNotEmpty() && repeat.isNotEmpty() && problem != null ->
                 BasicText(problem, style = type.chatPreview.copy(color = NineColors.Danger))
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)) {
-            ActionButton(if (changed) "Готово" else "Назад", onClick = onDone)
-            ActionButton(if (busy) "Меняем…" else "Сменить код", onClick = submit, primary = true, enabled = canSubmit)
+            ActionButton(if (changed) "Done" else "Back", onClick = onDone)
+            ActionButton(if (busy) "Changing…" else "Change code", onClick = submit, primary = true, enabled = canSubmit)
         }
     }
 }

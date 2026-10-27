@@ -6,8 +6,8 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 
 /**
- * Сообщает [onActivity] о любом движении мыши, нажатии и клавише внутри. Ничего не перехватывает:
- * события идут дальше как обычно. Нужен автоблокировке, чтобы знать, когда человек последний раз что-то делал.
+ * Reports any mouse movement, press or key inside to [onActivity]. Intercepts nothing:
+ * events go on as usual. The autolock needs it to know when the person last did anything.
  */
 fun Modifier.trackActivity(onActivity: () -> Unit): Modifier = this
     .onPreviewKeyEvent {

@@ -14,19 +14,19 @@ import app.nine.ui.components.ActionButton
 import app.nine.ui.theme.NineTheme
 
 /**
- * Подтверждение выхода со стиранием. Выход необратим: без копии ключа в аккаунт не вернуться,
- * поэтому он всегда идёт через этот вопрос, откуда бы человек ни вышел.
+ * Confirmation of signing out with erasure. Signing out is irreversible: without a key backup there is no way back into the account,
+ * so it always goes through this question, wherever the person signs out from.
  */
 @Composable
 fun EraseConfirmation(onErase: () -> Unit, onCancel: () -> Unit) {
     Column(Modifier.widthIn(max = 520.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         BasicText(
-            "Ключ и вся переписка будут стёрты с этого устройства. Без копии ключа вернуться в аккаунт нельзя.",
+            "The key and all conversations will be erased from this device. Without a key backup there is no way back into the account.",
             style = NineTheme.typography.chatPreview,
         )
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)) {
-            ActionButton("Отмена", onClick = onCancel)
-            ActionButton("Стереть", onClick = onErase, danger = true)
+            ActionButton("Cancel", onClick = onCancel)
+            ActionButton("Erase", onClick = onErase, danger = true)
         }
     }
 }
