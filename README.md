@@ -1,6 +1,16 @@
-# nine-messenger
+# Nine Messenger
+> Open Source alternative to popular messaging apps.
 
-An anonymous end-to-end encrypted messenger. No phone number, no email, no analytics.
+## What is it all about?
+**Nine Messenger is created with privacy in mind**, via End-to-End-Encryption (E2EE).
 
-- [`client/`](client/README.md): the desktop client in Kotlin and Compose Multiplatform.
-- [`docs/server-spec.md`](docs/server-spec.md): what the Go server has to do, endpoint by endpoint, with test vectors.
+> NOTE: The project is not ready for use.
+
+**Our priorities**:
+Project is designed to be 100% cross-platform.
+
+On client side we use Kotlin with framework Compose Multiplatform.
+
+On server side we use Go, due to it’s simplicity, safety, and speed.
+
+That's everything we know.
