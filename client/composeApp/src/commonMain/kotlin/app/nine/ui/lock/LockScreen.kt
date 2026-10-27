@@ -5,11 +5,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,8 +26,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import app.nine.domain.TimeSource
 import app.nine.presentation.formatPause
 import app.nine.security.MinAccessCodeLength
@@ -31,10 +36,10 @@ import app.nine.security.Session
 import app.nine.security.UnlockResult
 import app.nine.security.Vault
 import app.nine.security.isAcceptableAccessCode
-import app.nine.ui.components.ActionButton
-import app.nine.ui.components.AnonymityMask
 import app.nine.ui.components.FormField
 import app.nine.ui.components.GlassPanel
+import app.nine.ui.components.NineLogo
+import app.nine.ui.components.WideButton
 import app.nine.ui.platform.FilePicker
 import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
@@ -43,7 +48,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private enum class Stage { Welcome, CreateCode, Unlock, Restore }
+private enum class Stage { Create, Unlock, Restore }
 
 /**
  * Экран до входа в приложение: создание аккаунта, ввод кода доступа или восстановление из копии ключа.
@@ -52,29 +57,28 @@ private enum class Stage { Welcome, CreateCode, Unlock, Restore }
  */
 @Composable
 fun LockScreen(vault: Vault, filePicker: FilePicker, time: TimeSource, onOpened: (Session) -> Unit) {
-    var stage by remember { mutableStateOf(if (vault.hasAccount()) Stage.Unlock else Stage.Welcome) }
-    val type = NineTheme.typography
+    var stage by remember { mutableStateOf(if (vault.hasAccount()) Stage.Unlock else Stage.Create) }
+    val backStage = if (vault.hasAccount()) Stage.Unlock else Stage.Create
 
     Box(Modifier.fillMaxSize().background(NineColors.Background), contentAlignment = Alignment.Center) {
-        GlassPanel(Modifier.width(440.dp)) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 36.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                AnonymityMask(Modifier.width(150.dp))
-                BasicText("Nine", style = type.screenTitle)
-                when (stage) {
-                    Stage.Welcome -> Welcome(
-                        onCreate = { stage = Stage.CreateCode },
-                        onRestore = { stage = Stage.Restore },
-                    )
-                    Stage.CreateCode -> CreateCode(vault, onOpened, onBack = { stage = Stage.Welcome })
-                    Stage.Unlock -> Unlock(vault, time, onOpened, onForgot = { stage = Stage.Restore })
-                    Stage.Restore -> Restore(
-                        vault, filePicker, onOpened,
-                        onBack = { stage = if (vault.hasAccount()) Stage.Unlock else Stage.Welcome },
-                    )
+        GlassPanel(Modifier.fillMaxWidth(0.88f).widthIn(max = 1040.dp).fillMaxHeight(0.88f).heightIn(min = 520.dp, max = 680.dp)) {
+            Row(Modifier.fillMaxSize().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                AuthArt(
+                    eyebrow = "Без телефона и почты",
+                    headline = "Переписка, которую читаете только вы",
+                    modifier = Modifier.weight(0.9f).fillMaxHeight(),
+                )
+                Box(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()), contentAlignment = Alignment.Center) {
+                    Column(
+                        Modifier.widthIn(max = 340.dp).fillMaxWidth().padding(horizontal = 12.dp, vertical = 20.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp),
+                    ) {
+                        when (stage) {
+                            Stage.Create -> CreateCode(vault, onOpened, onRestore = { stage = Stage.Restore })
+                            Stage.Unlock -> Unlock(vault, time, onOpened, onForgot = { stage = Stage.Restore })
+                            Stage.Restore -> Restore(vault, filePicker, onOpened, onBack = { stage = backStage })
+                        }
+                    }
                 }
             }
         }
@@ -82,14 +86,15 @@ fun LockScreen(vault: Vault, filePicker: FilePicker, time: TimeSource, onOpened:
 }
 
 @Composable
-private fun Welcome(onCreate: () -> Unit, onRestore: () -> Unit) {
-    Hint("Аккаунт создаётся на этом устройстве. Телефон и почта не нужны.")
-    ActionButton("Создать аккаунт", onClick = onCreate, primary = true)
-    ActionButton("Восстановить из копии ключа", onClick = onRestore)
+private fun Heading(title: String, subtitle: String) {
+    val type = NineTheme.typography
+    NineLogo(NineColors.TextPrimary, size = 26.dp)
+    BasicText(title, style = type.screenTitle.copy(fontSize = 28.sp, lineHeight = 34.sp))
+    BasicText(subtitle, style = type.chatPreview)
 }
 
 @Composable
-private fun CreateCode(vault: Vault, onOpened: (Session) -> Unit, onBack: () -> Unit) {
+private fun CreateCode(vault: Vault, onOpened: (Session) -> Unit, onRestore: () -> Unit) {
     var code by remember { mutableStateOf("") }
     var repeat by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
@@ -108,14 +113,17 @@ private fun CreateCode(vault: Vault, onOpened: (Session) -> Unit, onBack: () -> 
         }
     }
 
-    Hint(
-        "Придумайте код доступа. Он открывает приложение на этом устройстве. " +
-            "Лучше фраза из нескольких слов. Забытый код восстановить нельзя, останется только копия ключа.",
+    Heading(
+        "Создать аккаунт",
+        "Он создаётся на этом устройстве, телефон и почта не нужны. Код доступа открывает приложение. " +
+            "Лучше фраза из нескольких слов: забытый код восстановить нельзя.",
     )
-    FormField(code, { code = it }, "Код доступа", Modifier.focusRequester(focus), secret = true)
-    FormField(repeat, { repeat = it }, "Повторите код", secret = true, onSubmit = submit)
+    FormField(code, { code = it }, "Придумайте код", Modifier.focusRequester(focus), label = "Код доступа", secret = true)
+    FormField(repeat, { repeat = it }, "Повторите код", label = "Повторите код", secret = true, onSubmit = submit)
     ProblemText(if (code.isEmpty() || repeat.isEmpty()) null else problem)
-    ButtonsRow(onBack, if (busy) "Создаём…" else "Создать", enabled = problem == null && !busy, onClick = submit)
+    WideButton(if (busy) "Создаём…" else "Начать", onClick = submit, enabled = problem == null && !busy)
+    OrDivider()
+    WideButton("Восстановить из копии ключа", onClick = onRestore, primary = false)
 }
 
 @Composable
@@ -160,11 +168,12 @@ private fun Unlock(vault: Vault, time: TimeSource, onOpened: (Session) -> Unit, 
         }
     }
 
-    Hint("Введите код доступа.")
-    FormField(code, { code = it }, "Код доступа", Modifier.focusRequester(focus), secret = true, onSubmit = submit)
+    Heading("С возвращением", "Введите код доступа, чтобы открыть переписку.")
+    FormField(code, { code = it }, "Код доступа", Modifier.focusRequester(focus), label = "Код доступа", secret = true, onSubmit = submit)
     ProblemText(if (paused) "Слишком много попыток. Подождите ${formatPause(pausedUntil - now)}." else message)
-    ActionButton("Открыть", onClick = submit, primary = true, enabled = code.isNotEmpty() && !busy && !paused)
-    ActionButton("Забыли код? Восстановить из копии ключа", onClick = onForgot)
+    WideButton(if (busy) "Проверяем…" else "Войти", onClick = submit, enabled = code.isNotEmpty() && !busy && !paused)
+    OrDivider()
+    WideButton("Восстановить из копии ключа", onClick = onForgot, primary = false)
 }
 
 @Composable
@@ -196,22 +205,25 @@ private fun Restore(vault: Vault, filePicker: FilePicker, onOpened: (Session) ->
         }
     }
 
-    Hint(
+    Heading(
+        "Восстановление",
         if (vault.hasAccount()) {
             "Аккаунт вернётся из копии ключа, а на этом устройстве задайте новый код. Переписка, которая сейчас на устройстве, будет стёрта."
         } else {
             "Выберите файл копии ключа, введите его пароль и задайте код доступа для этого устройства."
         },
     )
-    ActionButton(
+    WideButton(
         if (backup == null) "Выбрать файл копии" else "Файл выбран, выбрать другой",
         onClick = { filePicker.open()?.let { backup = it; message = null } },
+        primary = false,
     )
-    FormField(backupPassword, { backupPassword = it }, "Пароль копии", secret = true)
-    FormField(code, { code = it }, "Новый код доступа", secret = true)
-    FormField(repeat, { repeat = it }, "Повторите код", secret = true, onSubmit = submit)
+    FormField(backupPassword, { backupPassword = it }, "Пароль копии", label = "Пароль копии", secret = true)
+    FormField(code, { code = it }, "Новый код", label = "Новый код доступа", secret = true)
+    FormField(repeat, { repeat = it }, "Повторите код", label = "Повторите код", secret = true, onSubmit = submit)
     ProblemText(message ?: if (code.isEmpty() || repeat.isEmpty()) null else problem)
-    ButtonsRow(onBack, if (busy) "Восстанавливаем…" else "Восстановить", enabled = ready, onClick = submit)
+    WideButton(if (busy) "Восстанавливаем…" else "Восстановить", onClick = submit, enabled = ready)
+    WideButton("Назад", onClick = onBack, primary = false)
 }
 
 /** Что не так с введённым кодом, или null, если всё хорошо. */
@@ -222,21 +234,18 @@ private fun codeProblem(code: String, repeat: String): String? = when {
 }
 
 @Composable
-private fun Hint(text: String) {
-    BasicText(text, style = NineTheme.typography.chatPreview.copy(textAlign = TextAlign.Center))
-}
-
-@Composable
 private fun ProblemText(text: String?) {
     if (text != null) {
-        BasicText(text, style = NineTheme.typography.chatPreview.copy(color = NineColors.Danger, textAlign = TextAlign.Center))
+        BasicText(text, style = NineTheme.typography.chatPreview.copy(color = NineColors.Danger))
     }
 }
 
+/** Тонкая линия со словом «или» посередине: отделяет главное действие от запасного. */
 @Composable
-private fun ButtonsRow(onBack: () -> Unit, primaryText: String, enabled: Boolean, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)) {
-        ActionButton("Назад", onClick = onBack)
-        ActionButton(primaryText, onClick = onClick, primary = true, enabled = enabled)
+private fun OrDivider() {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Box(Modifier.weight(1f).height(1.dp).background(NineColors.Hairline))
+        BasicText("или", style = NineTheme.typography.time)
+        Box(Modifier.weight(1f).height(1.dp).background(NineColors.Hairline))
     }
 }

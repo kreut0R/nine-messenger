@@ -31,6 +31,8 @@ object NineColors {
 
     // Подложки полей ввода, вкладок и кнопок.
     val Control = Color.White.copy(alpha = 0.07f)
+    /** Рамка поля ввода на экранах входа. */
+    val FieldBorder = Color.White.copy(alpha = 0.22f)
     val ControlHover = Color.White.copy(alpha = 0.11f)
     val TabThumb = Color(0xFF2D2D2D)
 

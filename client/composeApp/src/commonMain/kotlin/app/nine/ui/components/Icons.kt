@@ -38,6 +38,17 @@ object NineIcons {
     val Check = lineIcon("Check", "M5 12.5l4.2 4.2L19 7.5")
     val DoubleCheck = lineIcon("DoubleCheck", "M2.5 12.5l4.2 4.2L15 8", "M10 15.5l1.2 1.2L21 7.5")
     val Send = lineIcon("Send", "M12 19V5M6 11l6-6 6 6")
+    val Eye = lineIcon(
+        "Eye",
+        "M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z",
+        "M15 12a3 3 0 1 1 -6 0a3 3 0 1 1 6 0",
+    )
+    val EyeOff = lineIcon(
+        "EyeOff",
+        "M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z",
+        "M15 12a3 3 0 1 1 -6 0a3 3 0 1 1 6 0",
+        "M4 4l16 16",
+    )
     val Person = lineIcon(
         "Person",
         "M16 8a4 4 0 1 1 -8 0a4 4 0 1 1 8 0",
