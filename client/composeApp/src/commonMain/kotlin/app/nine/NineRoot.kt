@@ -11,11 +11,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import app.nine.data.MessengerRepository
 import app.nine.domain.TimeSource
 import app.nine.security.Session
 import app.nine.security.Vault
 import app.nine.security.shouldAutoLock
+import app.nine.ui.components.isPanicShortcut
 import app.nine.ui.components.trackActivity
 import app.nine.ui.lock.LockScreen
 import app.nine.ui.platform.FilePicker
@@ -32,6 +34,7 @@ private const val AutoLockCheckMillis = 500L
  *
  * @param windowHidden whether the window is minimized. It is a function, not a value: a minimized window may not draw frames,
  *   and while nothing is redrawn, a new value passed as a parameter would not arrive and the lock would not fire.
+ * @param onHideWindow minimizes the window; the panic button calls it right after locking
  */
 @Composable
 fun NineRoot(
@@ -40,6 +43,7 @@ fun NineRoot(
     clipboard: SystemClipboard,
     time: TimeSource = TimeSource.System,
     windowHidden: () -> Boolean = { false },
+    onHideWindow: () -> Unit = {},
 ) {
     var session by remember { mutableStateOf<Session?>(null) }
     val open = session
@@ -55,6 +59,10 @@ fun NineRoot(
         open.lock()
         session = null
     }
+    val panic = {
+        lock()
+        onHideWindow()
+    }
 
     // Polling on a timer, not on state: the idle lock is not tied to any UI event.
     LaunchedEffect(open, data.settings.autoLock) {
@@ -67,13 +75,23 @@ fun NineRoot(
         }
     }
 
-    Box(Modifier.fillMaxSize().trackActivity { lastActivity = time.nowMillis() }) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .trackActivity { lastActivity = time.nowMillis() }
+            .onPreviewKeyEvent {
+                val triggered = data.settings.panicButton && it.isPanicShortcut()
+                if (triggered) panic()
+                triggered
+            },
+    ) {
         NineApp(
             repository = repository,
             session = open,
             filePicker = filePicker,
             clipboard = clipboard,
             onLock = lock,
+            onPanic = panic,
             onErase = {
                 open.lock()
                 vault.wipe()

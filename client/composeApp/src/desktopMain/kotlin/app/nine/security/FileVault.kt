@@ -46,6 +46,10 @@ class FileVault(
     override fun unlock(code: String): UnlockResult {
         val passed = when (val check = check(code)) {
             is Check.Refused -> return check.result
+            Check.WipeRequired -> {
+                wipe()
+                return UnlockResult.Wiped
+            }
             is Check.Passed -> check
         }
         val seed = try {
@@ -61,6 +65,7 @@ class FileVault(
     /**
      * Checks the code against the attempt limit and returns the master key or the reason for refusal.
      * The failure is recorded before the check: otherwise the app could be switched off in the middle of a check and the code guessed without a limit.
+     * The caller does the erasing when the answer is [Check.WipeRequired]: a session has to be closed first.
      */
     private fun check(code: String): Check {
         val record = readRecord() ?: return Check.Refused(UnlockResult.Damaged)
@@ -75,8 +80,14 @@ class FileVault(
         codeKey.fill(0)
         if (masterKey != null) return Check.Passed(masterKey, record)
 
+        val wipeLeft = WipePolicy.attemptsLeft(record.wipeAfter, failures)
+        if (wipeLeft == 0) return Check.WipeRequired
         val pause = Lockout.pauseAfter(failures)
-        val refusal = if (pause > 0) UnlockResult.Paused(now + pause) else UnlockResult.WrongCode(Lockout.FreeAttempts - failures)
+        val refusal = if (pause > 0) {
+            UnlockResult.Paused(now + pause, wipeLeft)
+        } else {
+            UnlockResult.WrongCode(Lockout.FreeAttempts - failures, wipeLeft)
+        }
         return Check.Refused(refusal)
     }
 
@@ -163,6 +174,7 @@ class FileVault(
     private sealed interface Check {
         class Passed(val masterKey: ByteArray, val record: VaultRecord) : Check
         class Refused(val result: UnlockResult) : Check
+        data object WipeRequired : Check
     }
 
     private inner class DeviceSession(
@@ -179,9 +191,15 @@ class FileVault(
             require(isAcceptableAccessCode(newCode)) { "The access code is shorter than $MinAccessCodeLength characters" }
             val passed = when (val check = check(current)) {
                 is Check.Refused -> return when (val refusal = check.result) {
-                    is UnlockResult.WrongCode -> ChangeCodeResult.WrongCode(refusal.attemptsBeforePause)
-                    is UnlockResult.Paused -> ChangeCodeResult.Paused(refusal.untilMillis)
+                    is UnlockResult.WrongCode -> ChangeCodeResult.WrongCode(refusal.attemptsBeforePause, refusal.attemptsBeforeWipe)
+                    is UnlockResult.Paused -> ChangeCodeResult.Paused(refusal.untilMillis, refusal.attemptsBeforeWipe)
                     else -> ChangeCodeResult.Damaged
+                }
+                Check.WipeRequired -> {
+                    // Close the session first: a write after the keys are wiped would leave a broken file behind.
+                    lock()
+                    wipe()
+                    return ChangeCodeResult.Wiped
                 }
                 is Check.Passed -> check
             }
@@ -193,11 +211,21 @@ class FileVault(
                     cost = cost,
                     salt = encode(salt),
                     wrappedKey = encode(Crypto.seal(codeKey, passed.masterKey, MasterKeyPurpose)),
+                    wipeAfter = passed.record.wipeAfter,
                 ),
             )
             codeKey.fill(0)
             passed.masterKey.fill(0)
             return ChangeCodeResult.Changed
+        }
+
+        override val wipeAfterFailures: Int
+            get() = readRecord()?.wipeAfter ?: WipePolicy.Off
+
+        override fun setWipeAfterFailures(limit: Int) {
+            require(WipePolicy.isValid(limit)) { "Unsupported limit: $limit" }
+            val record = checkNotNull(readRecord()) { "The key file cannot be read" }
+            writeRecord(record.copy(wipeAfter = limit))
         }
 
         override fun lock() {
@@ -224,4 +252,6 @@ private data class VaultRecord(
     val wrappedKey: String,
     val failures: Int = 0,
     val pausedUntilMillis: Long = 0,
+    /** After how many wrong codes in a row everything is erased, zero for never. See [WipePolicy]. */
+    val wipeAfter: Int = WipePolicy.Off,
 )

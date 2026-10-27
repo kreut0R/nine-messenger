@@ -23,6 +23,10 @@ fun main() = application {
     ) {
         // Below these sizes the three columns no longer fit.
         window.minimumSize = Dimension(900, 600)
-        NineRoot(vault, filePicker, clipboard, windowHidden = { windowState.isMinimized })
+        NineRoot(
+            vault, filePicker, clipboard,
+            windowHidden = { windowState.isMinimized },
+            onHideWindow = { windowState.isMinimized = true },
+        )
     }
 }

@@ -58,6 +58,7 @@ private enum class Stage { Create, Unlock, Restore }
 @Composable
 fun LockScreen(vault: Vault, filePicker: FilePicker, time: TimeSource, onOpened: (Session) -> Unit) {
     var stage by remember { mutableStateOf(if (vault.hasAccount()) Stage.Unlock else Stage.Create) }
+    var notice by remember { mutableStateOf<String?>(null) }
     val backStage = if (vault.hasAccount()) Stage.Unlock else Stage.Create
 
     Box(Modifier.fillMaxSize().background(NineColors.Background), contentAlignment = Alignment.Center) {
@@ -74,8 +75,15 @@ fun LockScreen(vault: Vault, filePicker: FilePicker, time: TimeSource, onOpened:
                         verticalArrangement = Arrangement.spacedBy(14.dp),
                     ) {
                         when (stage) {
-                            Stage.Create -> CreateCode(vault, onOpened, onRestore = { stage = Stage.Restore })
-                            Stage.Unlock -> Unlock(vault, time, onOpened, onForgot = { stage = Stage.Restore })
+                            Stage.Create -> CreateCode(vault, notice, onOpened, onRestore = { stage = Stage.Restore })
+                            Stage.Unlock -> Unlock(
+                                vault, time, onOpened,
+                                onForgot = { stage = Stage.Restore },
+                                onWiped = {
+                                    notice = "Everything on this device was erased after too many wrong codes."
+                                    stage = Stage.Create
+                                },
+                            )
                             Stage.Restore -> Restore(vault, filePicker, onOpened, onBack = { stage = backStage })
                         }
                     }
@@ -94,7 +102,7 @@ private fun Heading(title: String, subtitle: String) {
 }
 
 @Composable
-private fun CreateCode(vault: Vault, onOpened: (Session) -> Unit, onRestore: () -> Unit) {
+private fun CreateCode(vault: Vault, notice: String?, onOpened: (Session) -> Unit, onRestore: () -> Unit) {
     var code by remember { mutableStateOf("") }
     var repeat by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
@@ -118,6 +126,7 @@ private fun CreateCode(vault: Vault, onOpened: (Session) -> Unit, onRestore: () 
         "It is created on this device, no phone number or email needed. The access code opens the app. " +
             "A phrase of several words is better: a forgotten code cannot be recovered.",
     )
+    ProblemText(notice)
     FormField(code, { code = it }, "Choose a code", Modifier.focusRequester(focus), label = "Access code", secret = true)
     FormField(repeat, { repeat = it }, "Repeat the code", label = "Repeat the code", secret = true, onSubmit = submit)
     ProblemText(if (code.isEmpty() || repeat.isEmpty()) null else problem)
@@ -127,10 +136,11 @@ private fun CreateCode(vault: Vault, onOpened: (Session) -> Unit, onRestore: () 
 }
 
 @Composable
-private fun Unlock(vault: Vault, time: TimeSource, onOpened: (Session) -> Unit, onForgot: () -> Unit) {
+private fun Unlock(vault: Vault, time: TimeSource, onOpened: (Session) -> Unit, onForgot: () -> Unit, onWiped: () -> Unit) {
     var code by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
+    var wipeNote by remember { mutableStateOf<String?>(null) }
     var pausedUntil by remember { mutableStateOf(0L) }
     var now by remember { mutableStateOf(time.nowMillis()) }
     val scope = rememberCoroutineScope()
@@ -157,11 +167,16 @@ private fun Unlock(vault: Vault, time: TimeSource, onOpened: (Session) -> Unit, 
                 code = ""
                 when (result) {
                     is UnlockResult.Unlocked -> onOpened(result.session)
-                    is UnlockResult.WrongCode -> message = "Wrong code. Attempts before a pause: ${result.attemptsBeforePause}."
+                    is UnlockResult.WrongCode -> {
+                        message = "Wrong code. Attempts before a pause: ${result.attemptsBeforePause}."
+                        wipeNote = wipeWarning(result.attemptsBeforeWipe)
+                    }
                     is UnlockResult.Paused -> {
                         message = null
                         pausedUntil = result.untilMillis
+                        wipeNote = wipeWarning(result.attemptsBeforeWipe)
                     }
+                    UnlockResult.Wiped -> onWiped()
                     UnlockResult.Damaged -> message = "The key file is damaged. The account can still be restored from a key backup."
                 }
             }
@@ -171,6 +186,7 @@ private fun Unlock(vault: Vault, time: TimeSource, onOpened: (Session) -> Unit, 
     Heading("Welcome back", "Enter the access code to open your conversations.")
     FormField(code, { code = it }, "Access code", Modifier.focusRequester(focus), label = "Access code", secret = true, onSubmit = submit)
     ProblemText(if (paused) "Too many attempts. Wait ${formatPause(pausedUntil - now)}." else message)
+    ProblemText(wipeNote)
     WideButton(if (busy) "Checking…" else "Sign in", onClick = submit, enabled = code.isNotEmpty() && !busy && !paused)
     OrDivider()
     WideButton("Restore from a key backup", onClick = onForgot, primary = false)
@@ -224,6 +240,11 @@ private fun Restore(vault: Vault, filePicker: FilePicker, onOpened: (Session) ->
     ProblemText(message ?: if (code.isEmpty() || repeat.isEmpty()) null else problem)
     WideButton(if (busy) "Restoring…" else "Restore", onClick = submit, enabled = ready)
     WideButton("Back", onClick = onBack, primary = false)
+}
+
+/** The warning under a wrong code when erasing after failures is on, or null when it is off. */
+private fun wipeWarning(attemptsLeft: Int?): String? = attemptsLeft?.let {
+    "After $it more wrong ${if (it == 1) "code" else "codes"} everything on this device will be erased."
 }
 
 /** What is wrong with the entered code, or null if all is well. */

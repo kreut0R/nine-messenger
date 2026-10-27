@@ -14,7 +14,7 @@ There are no made-up contacts in the app: the chat list is empty until you creat
 - move a chat to the archive and back, pick the color of your own messages;
 - the conversations are saved to an encrypted file and restored on the next launch;
 - an account is created on the device without a phone number or email, sign-in with an access code, a key backup in a separate file;
-- a profile menu (profile, settings, lock, sign out) and full-screen settings with a grouped sidebar; the name, autolock, access code change and clipboard clearing work, the other items are marked "Soon".
+- a profile menu (profile, settings, lock, sign out) and full-screen settings with a grouped sidebar; the name, autolock, access code change, clipboard clearing, erasing after failed attempts and the panic button work, the other items are marked "Soon".
 
 ## How to run
 
@@ -92,8 +92,16 @@ What this gives and what it does not:
 - Changing the code changes only what the master key is wrapped with. The master key itself stays the same, so the new code does not
   revoke the old one: whoever managed to copy the files and learned the old code will open everything they copied. A full key
   rotation will be a separate step. A wrong current code during a change counts toward the same attempt limit as at sign-in.
+- Erasing after failed attempts is off until you turn it on (settings → "Security"): after 5, 10 or 20 wrong codes in a row everything
+  on the device is erased, and the screen warns how many attempts are left. Wrong current codes in the code change form count too.
+  The limit lives in the plaintext `vault.json` next to the counter, because the sign-in screen has to know it before any code is entered.
+  So it protects against someone using the app itself, not against someone with a copy of the files: they just do not run the app.
+  It also bites the owner: a child or a cat on the keyboard can destroy the data. The key backup brings the account back, not the conversations.
+- The panic button is off until you turn it on. It shows a red button in the chat list, and Ctrl+Shift+L (Cmd+Shift+L on a Mac) does the same
+  anywhere in the app: the app locks at once, the keys leave memory and the window is minimized. Nothing is erased, the next sign-in needs the code.
+  It works only while the app is open: a locked app is already protected by the code.
 - A forgotten code cannot be recovered. What remains is the key backup (settings → "Profile and sign-in" → "Save") with a separate
   password. It brings the account back, but not the conversations: the conversations live only on the device.
 
-What is not there yet: the Signal protocol for conversations with other people (needs the server), a duress code, wipe after
-failed attempts, a panic button, binding to the system keystore. They are shown in settings marked "Soon".
+What is not there yet: the Signal protocol for conversations with other people (needs the server), a duress code,
+binding to the system keystore. They are shown in settings marked "Soon".

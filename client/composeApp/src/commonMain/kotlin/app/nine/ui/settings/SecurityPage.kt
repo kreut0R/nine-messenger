@@ -23,11 +23,13 @@ import app.nine.presentation.formatPause
 import app.nine.security.ChangeCodeResult
 import app.nine.security.MinAccessCodeLength
 import app.nine.security.Session
+import app.nine.security.WipePolicy
 import app.nine.security.isAcceptableAccessCode
 import app.nine.ui.components.ActionButton
 import app.nine.ui.components.FormField
 import app.nine.ui.components.NineIcons
 import app.nine.ui.components.SegmentedTabs
+import app.nine.ui.components.ToggleSwitch
 import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
 import kotlinx.coroutines.Dispatchers
@@ -36,13 +38,15 @@ import kotlinx.coroutines.withContext
 
 private enum class SecurityStep { Overview, ChangeCode }
 
-/** The "Security" page: autolock and the access code. The rest of the list is shown as "Soon". */
+/** The "Security" page: autolock, the access code, erasing after wrong codes and the panic button. The rest of the list is shown as "Soon". */
 @Composable
 fun SecurityPage(
     settings: AppSettings,
     session: Session,
     time: TimeSource,
     onAutoLockChange: (AutoLock) -> Unit,
+    onPanicButtonChange: (Boolean) -> Unit,
+    onWiped: () -> Unit,
 ) {
     var step by remember { mutableStateOf(SecurityStep.Overview) }
     when (step) {
@@ -73,12 +77,14 @@ fun SecurityPage(
             SettingsDivider()
             Subsection("If you are forced to open the app") {
                 SoonRow(NineIcons.Warning, "Duress code", "Opens a decoy account, while the real one stays hidden.")
-                SoonRow(
-                    NineIcons.Trash,
-                    "Wipe after failed attempts",
-                    "Erases the data after a set number of wrong codes. Will be off by default.",
-                )
-                SoonRow(NineIcons.Alert, "Panic button", "Instantly locks the app and hides its window.")
+                WipeAfterFailuresRow(session)
+                FeatureRow(
+                    icon = NineIcons.Alert,
+                    title = "Panic button",
+                    description = "Locks the app at once and minimizes the window. A red button appears in the chat list, " +
+                        "and Ctrl+Shift+L does the same from anywhere in the app. Nothing is erased.",
+                    tone = Tone.Amber,
+                ) { ToggleSwitch(settings.panicButton, onPanicButtonChange) }
             }
             SettingsDivider()
             Subsection("Screen") {
@@ -86,9 +92,58 @@ fun SecurityPage(
             }
         }
         SecurityStep.ChangeCode -> SettingsPage("New access code") {
-            ChangeCodeForm(session, time, onDone = { step = SecurityStep.Overview })
+            ChangeCodeForm(session, time, onDone = { step = SecurityStep.Overview }, onWiped = onWiped)
         }
     }
+}
+
+/**
+ * The switch and the choice of the limit. The limit lives in the vault, not in the encrypted settings: the sign-in screen
+ * has to know it before any code is entered.
+ */
+@Composable
+private fun WipeAfterFailuresRow(session: Session) {
+    var limit by remember(session) { mutableStateOf(session.wipeAfterFailures) }
+    var problem by remember(session) { mutableStateOf<String?>(null) }
+    val choose = { new: Int ->
+        try {
+            session.setWipeAfterFailures(new)
+            limit = new
+            problem = null
+        } catch (error: IllegalStateException) {
+            problem = "Could not save: the key file cannot be read."
+        }
+    }
+    val on = limit != WipePolicy.Off
+    FeatureRow(
+        icon = NineIcons.Trash,
+        title = "Wipe after failed attempts",
+        description = if (on) {
+            "Everything on this device is erased after $limit wrong codes in a row, at sign-in or when changing the code. " +
+                "A key backup brings the account back, but not the conversations."
+        } else {
+            "Erases everything on this device after a set number of wrong codes in a row. Off."
+        },
+        tone = Tone.Red,
+        below = if (on || problem != null) {
+            {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (on) {
+                        Box(Modifier.widthIn(max = 460.dp)) {
+                            SegmentedTabs(
+                                titles = WipePolicy.Options.map { "After $it" },
+                                selectedIndex = WipePolicy.Options.indexOf(limit).coerceAtLeast(0),
+                                onSelect = { choose(WipePolicy.Options[it]) },
+                            )
+                        }
+                    }
+                    problem?.let { BasicText(it, style = NineTheme.typography.chatPreview.copy(color = NineColors.Danger)) }
+                }
+            }
+        } else {
+            null
+        },
+    ) { ToggleSwitch(on, { turnedOn -> choose(if (turnedOn) WipePolicy.Default else WipePolicy.Off) }) }
 }
 
 private val AutoLock.title: String
@@ -109,13 +164,18 @@ private val AutoLock.description: String
         AutoLock.Never -> "Never locks by itself: access has to be closed manually from the profile menu."
     }
 
+/** The warning added to a refusal when erasing after failures is on, or nothing when it is off. */
+private fun wipeWarning(attemptsLeft: Int?): String =
+    if (attemptsLeft == null) "" else " After $attemptsLeft more wrong ${if (attemptsLeft == 1) "code" else "codes"} everything on this device will be erased."
+
 @Composable
-private fun ChangeCodeForm(session: Session, time: TimeSource, onDone: () -> Unit) {
+private fun ChangeCodeForm(session: Session, time: TimeSource, onDone: () -> Unit, onWiped: () -> Unit) {
     var current by remember { mutableStateOf("") }
     var newCode by remember { mutableStateOf("") }
     var repeat by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var changed by remember { mutableStateOf(false) }
+    var wiped by remember { mutableStateOf(false) }
     var refusal by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
@@ -141,9 +201,11 @@ private fun ChangeCodeForm(session: Session, time: TimeSource, onDone: () -> Uni
                         newCode = ""
                         repeat = ""
                     }
-                    is ChangeCodeResult.WrongCode -> refusal = "The current code is wrong. Attempts before a pause: ${result.attemptsBeforePause}."
-                    is ChangeCodeResult.Paused ->
-                        refusal = "Too many wrong attempts. Wait ${formatPause(result.untilMillis - time.nowMillis())}."
+                    is ChangeCodeResult.WrongCode -> refusal = "The current code is wrong. Attempts before a pause: ${result.attemptsBeforePause}." +
+                        wipeWarning(result.attemptsBeforeWipe)
+                    is ChangeCodeResult.Paused -> refusal = "Too many wrong attempts. Wait ${formatPause(result.untilMillis - time.nowMillis())}." +
+                        wipeWarning(result.attemptsBeforeWipe)
+                    ChangeCodeResult.Wiped -> wiped = true
                     ChangeCodeResult.Damaged -> refusal = "The key file cannot be read."
                 }
             }
@@ -151,6 +213,17 @@ private fun ChangeCodeForm(session: Session, time: TimeSource, onDone: () -> Uni
     }
 
     val type = NineTheme.typography
+    if (wiped) {
+        Column(Modifier.widthIn(max = 520.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            BasicText(
+                "Too many wrong codes. Everything on this device has been erased. " +
+                    "A key backup brings the account back, but not the conversations.",
+                style = type.chatPreview.copy(color = NineColors.Danger),
+            )
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) { ActionButton("OK", onClick = onWiped, primary = true) }
+        }
+        return
+    }
     Column(Modifier.widthIn(max = 520.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         BasicText("The old code will stop opening the app. A forgotten code cannot be recovered.", style = type.chatPreview)
         FormField(current, { current = it }, "Current code", secret = true, filled = true)

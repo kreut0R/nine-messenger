@@ -70,6 +70,7 @@ fun SettingsScreen(
     time: TimeSource,
     onAutoLockChange: (AutoLock) -> Unit,
     onClearClipboardChange: (Boolean) -> Unit,
+    onPanicButtonChange: (Boolean) -> Unit,
     onDisplayNameChange: (String) -> Unit,
     onCopy: (String) -> Unit,
     onErase: () -> Unit,
@@ -101,7 +102,7 @@ fun SettingsScreen(
                 key(section) {
                     when (section) {
                         SettingsSection.Profile -> ProfilePage(displayName, session, filePicker, onDisplayNameChange, onCopy, onErase)
-                        SettingsSection.Security -> SecurityPage(settings, session, time, onAutoLockChange)
+                        SettingsSection.Security -> SecurityPage(settings, session, time, onAutoLockChange, onPanicButtonChange, onWiped = onErase)
                         SettingsSection.Privacy -> PrivacyPage(settings, onClearClipboardChange)
                         SettingsSection.Notifications -> NotificationsPage()
                         SettingsSection.Messages -> MessagesPage()
