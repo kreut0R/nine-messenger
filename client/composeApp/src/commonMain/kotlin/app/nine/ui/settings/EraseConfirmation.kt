@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,7 +19,7 @@ import app.nine.ui.theme.NineTheme
  */
 @Composable
 fun EraseConfirmation(onErase: () -> Unit, onCancel: () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(Modifier.widthIn(max = 520.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         BasicText(
             "Ключ и вся переписка будут стёрты с этого устройства. Без копии ключа вернуться в аккаунт нельзя.",
             style = NineTheme.typography.chatPreview,

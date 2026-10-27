@@ -1,11 +1,16 @@
 package app.nine.ui.settings
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -15,6 +20,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import app.nine.domain.displayCode
 import app.nine.security.MinAccessCodeLength
@@ -22,6 +28,8 @@ import app.nine.security.Session
 import app.nine.security.isAcceptableAccessCode
 import app.nine.ui.components.ActionButton
 import app.nine.ui.components.FormField
+import app.nine.ui.components.NineIcon
+import app.nine.ui.components.NineIcons
 import app.nine.ui.platform.FilePicker
 import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
@@ -32,9 +40,9 @@ import kotlinx.coroutines.withContext
 
 private enum class ProfileStep { Overview, Backup, ConfirmErase }
 
-/** Раздел «Профиль и вход»: код аккаунта, копия ключа и выход со стиранием. */
+/** Страница «Профиль и вход»: код аккаунта, копия ключа и выход со стиранием. */
 @Composable
-fun ProfileSection(session: Session, filePicker: FilePicker, onCopy: (String) -> Unit, onErase: () -> Unit) {
+fun ProfilePage(session: Session, filePicker: FilePicker, onCopy: (String) -> Unit, onErase: () -> Unit) {
     var step by remember { mutableStateOf(ProfileStep.Overview) }
     when (step) {
         ProfileStep.Overview -> Overview(
@@ -43,12 +51,10 @@ fun ProfileSection(session: Session, filePicker: FilePicker, onCopy: (String) ->
             onBackup = { step = ProfileStep.Backup },
             onErase = { step = ProfileStep.ConfirmErase },
         )
-        ProfileStep.Backup -> {
-            SectionTitle("Копия ключа")
+        ProfileStep.Backup -> SettingsPage("Копия ключа") {
             Backup(session, filePicker, onDone = { step = ProfileStep.Overview })
         }
-        ProfileStep.ConfirmErase -> {
-            SectionTitle("Стереть данные?")
+        ProfileStep.ConfirmErase -> SettingsPage("Стереть данные?") {
             EraseConfirmation(onErase, onCancel = { step = ProfileStep.Overview })
         }
     }
@@ -65,25 +71,48 @@ private fun Overview(session: Session, onCopy: (String) -> Unit, onBackup: () ->
         }
     }
 
-    SectionTitle("Профиль и вход")
-    SettingBlock("Код аккаунта", "Собеседник может сверить его с вами голосом, чтобы убедиться, что пишет именно вам.") {
-        SelectionContainer {
-            BasicText(code, style = NineTheme.typography.code.copy(color = NineColors.TextPrimary))
+    SettingsPage("Профиль и вход") {
+        Subsection("Профиль") {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(20.dp),
+            ) {
+                Box(Modifier.size(72.dp).clip(CircleShape).background(NineColors.Control), contentAlignment = Alignment.Center) {
+                    NineIcon(NineIcons.Person, tint = NineColors.TextSecondary, size = 32.dp)
+                }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    BasicText("Имя и аватар", style = NineTheme.typography.featureTitle)
+                    BasicText("Хранятся у вас и у собеседников, на сервер не уходят.", style = NineTheme.typography.chatPreview)
+                }
+                SoonBadge()
+            }
+            ReadOnlyField(
+                label = "Код аккаунта",
+                helper = "Собеседник может сверить его с вами голосом, чтобы убедиться, что пишет именно вам.",
+                value = code,
+            ) {
+                RowButton(if (copied) "Скопировано" else "Копировать", onClick = {
+                    onCopy(code)
+                    copied = true
+                })
+            }
         }
-        Row { RowButton(if (copied) "Скопировано" else "Копировать", onClick = {
-            onCopy(code)
-            copied = true
-        }) }
-    }
-    SoonRow("Имя и аватар", "Хранятся у вас и у собеседников, на сервер не уходят.")
-    SettingRow(
-        "Копия ключа",
-        "Файл с вашим ключом, закрытый отдельным паролем. Без него аккаунт не вернуть, если устройство потеряно.",
-    ) {
-        RowButton("Сохранить", onClick = onBackup)
-    }
-    SettingRow("Выйти с этого устройства", "Стирает ключ и всю переписку. Без копии ключа вернуться нельзя.") {
-        RowButton("Выйти", onClick = onErase, danger = true)
+        SettingsDivider()
+        Subsection("Ключ и вход") {
+            FeatureRow(
+                icon = NineIcons.Key,
+                title = "Копия ключа",
+                description = "Файл с вашим ключом, закрытый отдельным паролем. Без него аккаунт не вернуть, если устройство потеряно.",
+                tone = Tone.Active,
+            ) { RowButton("Сохранить", onClick = onBackup) }
+            FeatureRow(
+                icon = NineIcons.SignOut,
+                title = "Выйти с этого устройства",
+                description = "Стирает ключ и всю переписку. Без копии ключа вернуться нельзя.",
+                tone = Tone.Danger,
+            ) { RowButton("Выйти", onClick = onErase, danger = true) }
+        }
     }
 }
 
@@ -111,14 +140,14 @@ private fun Backup(session: Session, filePicker: FilePicker, onDone: () -> Unit)
         }
     }
 
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(Modifier.widthIn(max = 520.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         BasicText(
             "Файл с вашим ключом, зашифрованный отдельным паролем. Храните его вне этого устройства: " +
                 "без него аккаунт не вернуть, если устройство потеряно.",
             style = NineTheme.typography.chatPreview,
         )
-        FormField(password, { password = it }, "Пароль для копии", secret = true)
-        FormField(repeat, { repeat = it }, "Повторите пароль", secret = true, onSubmit = submit)
+        FormField(password, { password = it }, "Пароль для копии", secret = true, filled = true)
+        FormField(repeat, { repeat = it }, "Повторите пароль", secret = true, filled = true, onSubmit = submit)
         if (saved) {
             BasicText("Копия сохранена.", style = NineTheme.typography.chatPreview.copy(color = NineColors.Accent))
         } else if (password.isNotEmpty() && repeat.isNotEmpty() && problem != null) {

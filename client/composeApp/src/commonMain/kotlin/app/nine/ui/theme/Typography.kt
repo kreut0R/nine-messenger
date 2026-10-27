@@ -32,6 +32,13 @@ class NineTypography(private val family: FontFamily) {
     val profileName = style(20f, FontWeight.Bold)
     val chatName = style(16f, FontWeight.SemiBold)
     val rowTitle = style(15f, FontWeight.Medium)
+
+    // Окно настроек: заголовок страницы, подзаголовок блока, название пункта и подпись группы в боковом меню.
+    val pageTitle = style(26f, FontWeight.SemiBold, lineHeight = 32f, spacing = -0.4f)
+    val subsectionTitle = style(16f, FontWeight.SemiBold)
+    val featureTitle = style(15f, FontWeight.SemiBold)
+    val navItem = style(15f, FontWeight.Medium)
+    val groupLabel = style(12f, FontWeight.Medium, spacing = 0.9f).copy(color = NineColors.TextTertiary)
     val chatPreview = style(14f, FontWeight.Normal).copy(color = NineColors.TextSecondary)
     val time = style(13f, FontWeight.Normal).copy(color = NineColors.TextTertiary)
     val messageText = style(15f, FontWeight.Normal, lineHeight = 22.5f)

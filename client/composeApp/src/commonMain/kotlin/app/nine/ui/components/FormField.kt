@@ -1,5 +1,6 @@
 package app.nine.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,7 +39,8 @@ private val FieldShape = RoundedCornerShape(10.dp)
 
 /**
  * Однострочное поле с рамкой и подписью сверху. [secret] прячет набираемое точками, а значок глаза справа
- * показывает набранное до повторного нажатия. Enter вызывает [onSubmit].
+ * показывает набранное до повторного нажатия. Enter вызывает [onSubmit]. [filled] заливает поле серым вместо рамки:
+ * так оно выглядит в настройках.
  */
 @Composable
 fun FormField(
@@ -48,6 +50,7 @@ fun FormField(
     modifier: Modifier = Modifier,
     label: String? = null,
     secret: Boolean = false,
+    filled: Boolean = false,
     onSubmit: () -> Unit = {},
 ) {
     val type = NineTheme.typography
@@ -59,7 +62,7 @@ fun FormField(
                 .fillMaxWidth()
                 .height(46.dp)
                 .clip(FieldShape)
-                .border(1.dp, NineColors.FieldBorder, FieldShape)
+                .then(if (filled) Modifier.background(NineColors.Control) else Modifier.border(1.dp, NineColors.FieldBorder, FieldShape))
                 .padding(start = 14.dp, end = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),

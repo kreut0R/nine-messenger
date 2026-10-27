@@ -33,7 +33,7 @@ import app.nine.ui.platform.SystemClipboard
 import app.nine.ui.platform.copyTemporarily
 import app.nine.ui.profile.ProfileMenuButton
 import app.nine.ui.profile.SignOutDialog
-import app.nine.ui.settings.SettingsDialog
+import app.nine.ui.settings.SettingsScreen
 import app.nine.ui.settings.SettingsSection
 import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
@@ -119,7 +119,7 @@ fun NineApp(
                 }
             }
             settingsSection?.let { section ->
-                SettingsDialog(
+                SettingsScreen(
                     initial = section,
                     settings = data.settings,
                     session = session,

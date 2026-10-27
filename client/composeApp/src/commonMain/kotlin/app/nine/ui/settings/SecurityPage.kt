@@ -1,9 +1,11 @@
 package app.nine.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +26,7 @@ import app.nine.security.Session
 import app.nine.security.isAcceptableAccessCode
 import app.nine.ui.components.ActionButton
 import app.nine.ui.components.FormField
+import app.nine.ui.components.NineIcons
 import app.nine.ui.components.SegmentedTabs
 import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
@@ -33,9 +36,9 @@ import kotlinx.coroutines.withContext
 
 private enum class SecurityStep { Overview, ChangeCode }
 
-/** Раздел «Безопасность»: автоблокировка и код доступа. Остальное из списка показано как «Скоро». */
+/** Страница «Безопасность»: автоблокировка и код доступа. Остальное из списка показано как «Скоро». */
 @Composable
-fun SecuritySection(
+fun SecurityPage(
     settings: AppSettings,
     session: Session,
     time: TimeSource,
@@ -43,28 +46,46 @@ fun SecuritySection(
 ) {
     var step by remember { mutableStateOf(SecurityStep.Overview) }
     when (step) {
-        SecurityStep.Overview -> {
-            SectionTitle("Безопасность")
-            SettingBlock("Автоблокировка", settings.autoLock.description) {
-                SegmentedTabs(
-                    titles = AutoLock.entries.map { it.title },
-                    selectedIndex = settings.autoLock.ordinal,
-                    onSelect = { onAutoLockChange(AutoLock.entries[it]) },
+        SecurityStep.Overview -> SettingsPage("Безопасность") {
+            Subsection("Вход") {
+                FeatureRow(
+                    icon = NineIcons.Clock,
+                    title = "Автоблокировка",
+                    description = settings.autoLock.description,
+                    tone = Tone.Active,
+                    below = {
+                        Box(Modifier.widthIn(max = 460.dp)) {
+                            SegmentedTabs(
+                                titles = AutoLock.entries.map { it.title },
+                                selectedIndex = settings.autoLock.ordinal,
+                                onSelect = { onAutoLockChange(AutoLock.entries[it]) },
+                            )
+                        }
+                    },
                 )
+                FeatureRow(
+                    icon = NineIcons.Key,
+                    title = "Код доступа",
+                    description = "Открывает приложение. Минимум $MinAccessCodeLength символов, лучше фраза из нескольких слов.",
+                    tone = Tone.Active,
+                ) { RowButton("Сменить", onClick = { step = SecurityStep.ChangeCode }) }
             }
-            SettingRow("Код доступа", "Открывает приложение. Минимум $MinAccessCodeLength символов, лучше фраза из нескольких слов.") {
-                RowButton("Сменить", onClick = { step = SecurityStep.ChangeCode })
+            SettingsDivider()
+            Subsection("Если вас заставляют открыть приложение") {
+                SoonRow(NineIcons.Warning, "Тревожный код", "Открывает подставной аккаунт, а настоящий остаётся скрытым.")
+                SoonRow(
+                    NineIcons.Trash,
+                    "Стирание после неудачных попыток",
+                    "Сотрёт данные после заданного числа неверных кодов. Будет выключено по умолчанию.",
+                )
+                SoonRow(NineIcons.Alert, "Кнопка паники", "Мгновенно блокирует приложение и прячет его окно.")
             }
-            SoonRow("Тревожный код", "Открывает подставной аккаунт, а настоящий остаётся скрытым.")
-            SoonRow(
-                "Стирание после неудачных попыток",
-                "Сотрёт данные после заданного числа неверных кодов. Будет выключено по умолчанию.",
-            )
-            SoonRow("Кнопка паники", "Мгновенно блокирует приложение и прячет его окно.")
-            SoonRow("Запрет скриншотов", "Только на телефоне.")
+            SettingsDivider()
+            Subsection("Экран") {
+                SoonRow(NineIcons.NoScreen, "Запрет скриншотов", "Только на телефоне.")
+            }
         }
-        SecurityStep.ChangeCode -> {
-            SectionTitle("Новый код доступа")
+        SecurityStep.ChangeCode -> SettingsPage("Новый код доступа") {
             ChangeCodeForm(session, time, onDone = { step = SecurityStep.Overview })
         }
     }
@@ -130,11 +151,11 @@ private fun ChangeCodeForm(session: Session, time: TimeSource, onDone: () -> Uni
     }
 
     val type = NineTheme.typography
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(Modifier.widthIn(max = 520.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         BasicText("Старый код перестанет открывать приложение. Забытый код восстановить нельзя.", style = type.chatPreview)
-        FormField(current, { current = it }, "Текущий код", secret = true)
-        FormField(newCode, { newCode = it }, "Новый код", secret = true)
-        FormField(repeat, { repeat = it }, "Повторите новый код", secret = true, onSubmit = submit)
+        FormField(current, { current = it }, "Текущий код", secret = true, filled = true)
+        FormField(newCode, { newCode = it }, "Новый код", secret = true, filled = true)
+        FormField(repeat, { repeat = it }, "Повторите новый код", secret = true, filled = true, onSubmit = submit)
         when {
             changed -> BasicText("Код изменён.", style = type.chatPreview.copy(color = NineColors.Accent))
             refusal != null -> BasicText(refusal.orEmpty(), style = type.chatPreview.copy(color = NineColors.Danger))

@@ -44,6 +44,9 @@ object NineColors {
     val OwnBubbleBorder = Color(0xFF96EBAF).copy(alpha = 0.14f)
     val OnOwnBubble = Color(0xFFF2FBF4)
 
+    /** Боковое меню настроек чуть темнее страницы рядом с ним. */
+    val Sidebar = Color(0xFF080808)
+
     /** Всплывающее меню чуть светлее панелей, на которых оно лежит. */
     val Menu = Color(0xFF171717)
 
