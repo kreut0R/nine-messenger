@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -37,8 +36,8 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import app.nine.ui.components.ActionButton
 import app.nine.ui.components.PanelShape
-import app.nine.ui.components.pressable
 import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
 
@@ -113,29 +112,9 @@ fun NewChatDialog(onCreate: (String) -> Unit, onDismiss: () -> Unit) {
                 },
             )
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)) {
-                DialogButton("Отмена", primary = false, enabled = true, onClick = onDismiss)
-                DialogButton("Создать", primary = true, enabled = canCreate, onClick = { submit() })
+                ActionButton("Отмена", onClick = onDismiss)
+                ActionButton("Создать", onClick = { submit() }, primary = true, enabled = canCreate)
             }
         }
     }
-}
-
-@Composable
-private fun DialogButton(text: String, primary: Boolean, enabled: Boolean, onClick: () -> Unit) {
-    val base = if (primary) NineColors.TabThumb else Color.Transparent
-    BasicText(
-        text = text,
-        style = NineTheme.typography.button.copy(
-            color = if (primary && enabled) NineColors.Accent else NineColors.TextSecondary,
-        ),
-        modifier = Modifier
-            .height(40.dp)
-            .pressable(
-                onClick = { if (enabled) onClick() },
-                shape = PanelShape,
-                background = base,
-                hoverBackground = if (enabled) NineColors.ControlHover else base,
-            )
-            .padding(horizontal = 18.dp, vertical = 11.dp),
-    )
 }

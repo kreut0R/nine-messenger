@@ -38,6 +38,11 @@ object NineIcons {
     val Check = lineIcon("Check", "M5 12.5l4.2 4.2L19 7.5")
     val DoubleCheck = lineIcon("DoubleCheck", "M2.5 12.5l4.2 4.2L15 8", "M10 15.5l1.2 1.2L21 7.5")
     val Send = lineIcon("Send", "M12 19V5M6 11l6-6 6 6")
+    val Person = lineIcon(
+        "Person",
+        "M16 8a4 4 0 1 1 -8 0a4 4 0 1 1 8 0",
+        "M4.5 20c.9-3.4 3.7-5.2 7.5-5.2s6.6 1.8 7.5 5.2",
+    )
 }
 
 private fun lineIcon(name: String, vararg paths: String): ImageVector =

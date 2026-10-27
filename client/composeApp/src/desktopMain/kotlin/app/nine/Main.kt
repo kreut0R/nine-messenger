@@ -6,14 +6,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import app.nine.data.FileMessengerStore
-import app.nine.data.MessengerRepository
 import app.nine.data.appDataDirectory
+import app.nine.security.FileVault
 import java.awt.Dimension
 
-/** Точка входа настольного приложения: собирает хранилище, репозиторий и открывает окно. */
+/** Точка входа настольного приложения: собирает хранилище ключей и открывает окно. */
 fun main() = application {
-    val repository = remember { MessengerRepository(FileMessengerStore(appDataDirectory())) }
+    val vault = remember { FileVault(appDataDirectory()) }
+    val filePicker = remember { AwtFilePicker() }
     Window(
         onCloseRequest = ::exitApplication,
         title = "Nine",
@@ -21,6 +21,6 @@ fun main() = application {
     ) {
         // Ниже этих размеров три колонки уже не помещаются.
         window.minimumSize = Dimension(900, 600)
-        NineApp(repository)
+        NineRoot(vault, filePicker)
     }
 }

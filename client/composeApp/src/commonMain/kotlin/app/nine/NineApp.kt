@@ -12,17 +12,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.nine.data.MessengerRepository
 import app.nine.domain.TimeSource
 import app.nine.presentation.MessengerUiState
 import app.nine.presentation.filterChats
+import app.nine.security.Session
 import app.nine.ui.chatlist.ChatListPane
 import app.nine.ui.contact.ContactPane
 import app.nine.ui.conversation.ConversationPane
 import app.nine.ui.dialog.NewChatDialog
+import app.nine.ui.platform.FilePicker
+import app.nine.ui.profile.ProfileDialog
 import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
 
@@ -31,10 +36,18 @@ private val ContactPaneMinWindowWidth = 1150.dp
 
 /** Корень интерфейса: три колонки (чаты, переписка, контакт) и окно создания чата поверх них. */
 @Composable
-fun NineApp(repository: MessengerRepository, time: TimeSource = TimeSource.System) {
+fun NineApp(
+    repository: MessengerRepository,
+    session: Session,
+    filePicker: FilePicker,
+    onLock: () -> Unit,
+    onErase: () -> Unit,
+    time: TimeSource = TimeSource.System,
+) {
     NineTheme {
         val data by repository.data.collectAsState()
         val ui = remember { MessengerUiState() }
+        var profileOpen by remember { mutableStateOf(false) }
         val selected = data.chats.firstOrNull { it.id == ui.selectedChatId }
 
         // Открытый чат считается прочитанным: сбрасываем счётчик и когда выбрали чат, и когда в него пришло новое.
@@ -52,6 +65,7 @@ fun NineApp(repository: MessengerRepository, time: TimeSource = TimeSource.Syste
                         ui = ui,
                         time = time,
                         onNewChat = { ui.newChatDialogOpen = true },
+                        onOpenProfile = { profileOpen = true },
                         modifier = Modifier.fillMaxHeight(),
                     )
                     ConversationPane(
@@ -81,6 +95,15 @@ fun NineApp(repository: MessengerRepository, time: TimeSource = TimeSource.Syste
                         )
                     }
                 }
+            }
+            if (profileOpen) {
+                ProfileDialog(
+                    session = session,
+                    filePicker = filePicker,
+                    onLock = onLock,
+                    onErase = onErase,
+                    onDismiss = { profileOpen = false },
+                )
             }
             if (ui.newChatDialogOpen) {
                 NewChatDialog(

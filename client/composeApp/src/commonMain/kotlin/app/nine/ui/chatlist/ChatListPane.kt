@@ -47,6 +47,7 @@ fun ChatListPane(
     ui: MessengerUiState,
     time: TimeSource,
     onNewChat: () -> Unit,
+    onOpenProfile: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val type = NineTheme.typography
@@ -65,6 +66,7 @@ fun ChatListPane(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 BasicText("Чаты", style = type.screenTitle, modifier = Modifier.weight(1f))
+                IconAction(NineIcons.Person, "Профиль", onOpenProfile, shape = CircleShape, size = 36.dp)
                 IconAction(NineIcons.Search, "Поиск по чатам", ui::toggleChatSearch, shape = CircleShape, size = 36.dp)
                 IconAction(
                     icon = NineIcons.PlusCircle,

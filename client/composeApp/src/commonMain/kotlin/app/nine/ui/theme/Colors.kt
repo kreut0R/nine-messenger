@@ -22,6 +22,8 @@ object NineColors {
     val TextTertiary = Color(0xFF838885)
 
     val Accent = Color(0xFF4CC47C)
+    /** Ошибки и необратимые действия. */
+    val Danger = Color(0xFFE5736A)
     val AccentSoft = Color(0xFF8FCAA0)
 
     val SelectedRow = Color(0xFF0F4D2F).copy(alpha = 0.50f)
