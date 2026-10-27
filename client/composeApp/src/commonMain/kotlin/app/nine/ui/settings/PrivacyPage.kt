@@ -16,13 +16,13 @@ fun PrivacyPage(settings: AppSettings, onClearClipboardChange: (Boolean) -> Unit
                 icon = NineIcons.Link,
                 title = "Превью ссылок",
                 description = "Не загружаются. Приложение само не ходит на чужие сайты и не показывает им ваш IP-адрес.",
-                tone = Tone.Active,
+                tone = Tone.Green,
             ) { BasicText("Выключено", style = NineTheme.typography.chatPreview) }
             FeatureRow(
                 icon = NineIcons.Clipboard,
                 title = "Очищать буфер обмена",
                 description = "Через 30 секунд после копирования из Nine скопированное убирается из буфера.",
-                tone = Tone.Active,
+                tone = Tone.Blue,
             ) { ToggleSwitch(settings.clearClipboard, onClearClipboardChange) }
         }
         SettingsDivider()

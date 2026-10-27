@@ -9,6 +9,18 @@ import app.nine.ui.theme.NineTheme
 // Каждая строка помечена «Скоро», чтобы ничто не выглядело рабочим раньше времени.
 
 @Composable
+fun NotificationsPage() = SettingsPage("Уведомления") {
+    Subsection("Новые сообщения") {
+        SoonRow(NineIcons.Bell, "Показывать уведомления", "Выключить совсем или показывать, только когда окно свёрнуто.")
+        SoonRow(
+            NineIcons.HiddenEye,
+            "Прятать текст в уведомлении",
+            "В уведомлении будет только «Новое сообщение»: без имени собеседника и без текста.",
+        )
+    }
+}
+
+@Composable
 fun MessagesPage() = SettingsPage("Сообщения") {
     Subsection("История") {
         SoonRow(
@@ -52,7 +64,7 @@ fun AppearancePage() = SettingsPage("Внешний вид") {
     }
     SettingsDivider()
     Subsection("Список чатов") {
-        SoonRow(NineIcons.EyeOff, "Маска анонимности", "Показывать маску внизу списка чатов или скрыть её.")
+        SoonRow(NineIcons.HiddenEye, "Маска анонимности", "Показывать маску внизу списка чатов или скрыть её.")
     }
 }
 

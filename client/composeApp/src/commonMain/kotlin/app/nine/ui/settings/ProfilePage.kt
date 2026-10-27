@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -22,11 +24,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import app.nine.domain.MaxDisplayNameLength
 import app.nine.domain.displayCode
 import app.nine.security.MinAccessCodeLength
 import app.nine.security.Session
 import app.nine.security.isAcceptableAccessCode
 import app.nine.ui.components.ActionButton
+import app.nine.ui.components.Avatar
 import app.nine.ui.components.FormField
 import app.nine.ui.components.NineIcon
 import app.nine.ui.components.NineIcons
@@ -42,11 +46,20 @@ private enum class ProfileStep { Overview, Backup, ConfirmErase }
 
 /** Страница «Профиль и вход»: код аккаунта, копия ключа и выход со стиранием. */
 @Composable
-fun ProfilePage(session: Session, filePicker: FilePicker, onCopy: (String) -> Unit, onErase: () -> Unit) {
+fun ProfilePage(
+    displayName: String,
+    session: Session,
+    filePicker: FilePicker,
+    onDisplayNameChange: (String) -> Unit,
+    onCopy: (String) -> Unit,
+    onErase: () -> Unit,
+) {
     var step by remember { mutableStateOf(ProfileStep.Overview) }
     when (step) {
         ProfileStep.Overview -> Overview(
+            displayName,
             session,
+            onDisplayNameChange,
             onCopy,
             onBackup = { step = ProfileStep.Backup },
             onErase = { step = ProfileStep.ConfirmErase },
@@ -61,7 +74,14 @@ fun ProfilePage(session: Session, filePicker: FilePicker, onCopy: (String) -> Un
 }
 
 @Composable
-private fun Overview(session: Session, onCopy: (String) -> Unit, onBackup: () -> Unit, onErase: () -> Unit) {
+private fun Overview(
+    displayName: String,
+    session: Session,
+    onDisplayNameChange: (String) -> Unit,
+    onCopy: (String) -> Unit,
+    onBackup: () -> Unit,
+    onErase: () -> Unit,
+) {
     val code = session.accountId.displayCode
     var copied by remember { mutableStateOf(false) }
     LaunchedEffect(copied) {
@@ -78,15 +98,22 @@ private fun Overview(session: Session, onCopy: (String) -> Unit, onBackup: () ->
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(20.dp),
             ) {
-                Box(Modifier.size(72.dp).clip(CircleShape).background(NineColors.Control), contentAlignment = Alignment.Center) {
-                    NineIcon(NineIcons.Person, tint = NineColors.TextSecondary, size = 32.dp)
+                if (displayName.isBlank()) {
+                    Box(Modifier.size(72.dp).clip(CircleShape).background(NineColors.Control), contentAlignment = Alignment.Center) {
+                        NineIcon(NineIcons.Person, tint = NineColors.TextSecondary, size = 32.dp)
+                    }
+                } else {
+                    Avatar(displayName, seed = code, size = 72.dp)
                 }
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    BasicText("Имя и аватар", style = NineTheme.typography.featureTitle)
-                    BasicText("Хранятся у вас и у собеседников, на сервер не уходят.", style = NineTheme.typography.chatPreview)
+                    BasicText("Аватар", style = NineTheme.typography.featureTitle)
+                    BasicText("Фото из файла. Пока вместо него первая буква имени.", style = NineTheme.typography.chatPreview)
                 }
                 SoonBadge()
             }
+            Spacer(Modifier.height(10.dp))
+            NameField(displayName, onDisplayNameChange)
+            Spacer(Modifier.height(10.dp))
             ReadOnlyField(
                 label = "Код аккаунта",
                 helper = "Собеседник может сверить его с вами голосом, чтобы убедиться, что пишет именно вам.",
@@ -104,14 +131,51 @@ private fun Overview(session: Session, onCopy: (String) -> Unit, onBackup: () ->
                 icon = NineIcons.Key,
                 title = "Копия ключа",
                 description = "Файл с вашим ключом, закрытый отдельным паролем. Без него аккаунт не вернуть, если устройство потеряно.",
-                tone = Tone.Active,
+                tone = Tone.Amber,
             ) { RowButton("Сохранить", onClick = onBackup) }
             FeatureRow(
                 icon = NineIcons.SignOut,
                 title = "Выйти с этого устройства",
                 description = "Стирает ключ и всю переписку. Без копии ключа вернуться нельзя.",
-                tone = Tone.Danger,
+                tone = Tone.Red,
             ) { RowButton("Выйти", onClick = onErase, danger = true) }
+        }
+    }
+}
+
+/** Поле имени с кнопкой «Сохранить»: имя меняется только по кнопке или Enter, а не на каждую набранную букву. */
+@Composable
+private fun NameField(displayName: String, onChange: (String) -> Unit) {
+    var draft by remember(displayName) { mutableStateOf(displayName) }
+    var saved by remember { mutableStateOf(false) }
+    LaunchedEffect(saved) {
+        if (saved) {
+            delay(2_000)
+            saved = false
+        }
+    }
+    val changed = draft.trim() != displayName
+    val save = {
+        if (changed) {
+            onChange(draft)
+            saved = true
+        }
+    }
+
+    FieldBlock(
+        label = "Имя",
+        helper = "Так вас увидят собеседники. Пока сервера нет, имя видно только вам.",
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            FormField(
+                value = draft,
+                onValueChange = { draft = it.take(MaxDisplayNameLength) },
+                placeholder = "Как вас называть",
+                modifier = Modifier.weight(1f),
+                filled = true,
+                onSubmit = save,
+            )
+            RowButton(if (saved && !changed) "Сохранено" else "Сохранить", onClick = save, enabled = changed)
         }
     }
 }

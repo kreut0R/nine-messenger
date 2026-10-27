@@ -64,11 +64,13 @@ private val PageMaxWidth = 960.dp
 fun SettingsScreen(
     initial: SettingsSection,
     settings: AppSettings,
+    displayName: String,
     session: Session,
     filePicker: FilePicker,
     time: TimeSource,
     onAutoLockChange: (AutoLock) -> Unit,
     onClearClipboardChange: (Boolean) -> Unit,
+    onDisplayNameChange: (String) -> Unit,
     onCopy: (String) -> Unit,
     onErase: () -> Unit,
     onDismiss: () -> Unit,
@@ -98,9 +100,10 @@ fun SettingsScreen(
                 // Страница создаётся заново при смене раздела: у каждой свои формы, и незавершённый ввод не должен переезжать.
                 key(section) {
                     when (section) {
-                        SettingsSection.Profile -> ProfilePage(session, filePicker, onCopy, onErase)
+                        SettingsSection.Profile -> ProfilePage(displayName, session, filePicker, onDisplayNameChange, onCopy, onErase)
                         SettingsSection.Security -> SecurityPage(settings, session, time, onAutoLockChange)
                         SettingsSection.Privacy -> PrivacyPage(settings, onClearClipboardChange)
+                        SettingsSection.Notifications -> NotificationsPage()
                         SettingsSection.Messages -> MessagesPage()
                         SettingsSection.Contacts -> ContactsPage()
                         SettingsSection.Network -> NetworkPage()
@@ -157,7 +160,7 @@ private fun NavItem(item: SettingsSection, selected: Boolean, onClick: () -> Uni
             .fillMaxWidth()
             .height(40.dp)
             // У выбранного пункта фон особый, и наведение его не меняет.
-            .pressable(onClick, RoundedCornerShape(8.dp), hoverBackground = if (selected) background else NineColors.Control, background = background)
+            .pressable(onClick, RoundedCornerShape(10.dp), hoverBackground = if (selected) background else NineColors.Control, background = background)
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),

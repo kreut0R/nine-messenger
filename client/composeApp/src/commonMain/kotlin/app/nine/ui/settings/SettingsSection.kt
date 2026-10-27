@@ -12,13 +12,14 @@ enum class SettingsGroup(val title: String) {
 
 /** Разделы настроек в порядке показа. Первые три рабочие, остальные пока показывают, что будет. */
 enum class SettingsSection(val title: String, val icon: ImageVector, val group: SettingsGroup) {
-    Profile("Профиль и вход", NineIcons.Person, SettingsGroup.Personal),
+    Profile("Профиль и вход", NineIcons.PersonCircle, SettingsGroup.Personal),
     Security("Безопасность", NineIcons.Shield, SettingsGroup.Personal),
-    Privacy("Приватность", NineIcons.EyeOff, SettingsGroup.Personal),
+    Privacy("Приватность", NineIcons.HiddenEye, SettingsGroup.Personal),
+    Notifications("Уведомления", NineIcons.Bell, SettingsGroup.Personal),
     Messages("Сообщения", NineIcons.Chat, SettingsGroup.Chats),
     Contacts("Собеседники", NineIcons.Users, SettingsGroup.Chats),
     Network("Сеть", NineIcons.Globe, SettingsGroup.App),
-    Appearance("Внешний вид", NineIcons.Moon, SettingsGroup.App),
+    Appearance("Внешний вид", NineIcons.Palette, SettingsGroup.App),
     Data("Данные", NineIcons.Database, SettingsGroup.App),
     About("О приложении", NineIcons.Info, SettingsGroup.App),
 }

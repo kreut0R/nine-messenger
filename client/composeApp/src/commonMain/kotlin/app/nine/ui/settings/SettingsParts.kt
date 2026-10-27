@@ -27,8 +27,8 @@ import app.nine.ui.components.pressable
 import app.nine.ui.theme.NineColors
 import app.nine.ui.theme.NineTheme
 
-/** Как окрашена плитка с иконкой: зелёная для того, что работает, серая для остального, красная для опасного. */
-enum class Tone { Active, Neutral, Danger }
+/** Цвет плитки с иконкой. Рабочие настройки цветные, красная у необратимых, серая у тех, которых ещё нет. */
+enum class Tone { Green, Blue, Amber, Red, Neutral }
 
 /** Страница настроек: большой заголовок и блоки под ним. Блоки отделяются друг от друга через [SettingsDivider]. */
 @Composable
@@ -88,12 +88,14 @@ fun FeatureRow(
 @Composable
 private fun IconTile(icon: ImageVector, tone: Tone) {
     val (fill, tint) = when (tone) {
-        Tone.Active -> NineColors.Accent.copy(alpha = 0.16f) to NineColors.Accent
+        Tone.Green -> NineColors.TileGreen to NineColors.OnTile
+        Tone.Blue -> NineColors.TileBlue to NineColors.OnTile
+        Tone.Amber -> NineColors.TileAmber to NineColors.OnTile
+        Tone.Red -> NineColors.TileRed to NineColors.OnTile
         Tone.Neutral -> NineColors.Control to NineColors.TextSecondary
-        Tone.Danger -> NineColors.Danger.copy(alpha = 0.14f) to NineColors.Danger
     }
-    Box(Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(fill), contentAlignment = Alignment.Center) {
-        NineIcon(icon, tint = tint, size = 20.dp)
+    Box(Modifier.size(40.dp).clip(RoundedCornerShape(11.dp)).background(fill), contentAlignment = Alignment.Center) {
+        NineIcon(icon, tint = tint, size = 22.dp)
     }
 }
 
@@ -115,26 +117,48 @@ fun SoonRow(icon: ImageVector, title: String, description: String) {
     FeatureRow(icon, title, description, trailing = { SoonBadge() })
 }
 
-/** Кнопка в правой части строки. [danger] красит текст красным: так отмечают то, что нельзя отменить. */
+/**
+ * Кнопка в правой части строки. [danger] красит текст красным: так отмечают то, что нельзя отменить.
+ * Выключенная кнопка тусклая и не нажимается.
+ */
 @Composable
-fun RowButton(text: String, onClick: () -> Unit, danger: Boolean = false) {
+fun RowButton(text: String, onClick: () -> Unit, danger: Boolean = false, enabled: Boolean = true) {
+    val color = when {
+        !enabled -> NineColors.TextTertiary
+        danger -> NineColors.Danger
+        else -> NineColors.TextPrimary
+    }
     BasicText(
         text,
-        style = NineTheme.typography.button.copy(color = if (danger) NineColors.Danger else NineColors.TextPrimary),
+        style = NineTheme.typography.button.copy(color = color),
         modifier = Modifier
-            .pressable(onClick, RoundedCornerShape(8.dp), hoverBackground = NineColors.ControlHover, background = NineColors.Control)
+            .pressable(
+                onClick = { if (enabled) onClick() },
+                shape = RoundedCornerShape(8.dp),
+                hoverBackground = if (enabled) NineColors.ControlHover else NineColors.Control,
+                background = NineColors.Control,
+            )
             .padding(horizontal = 16.dp, vertical = 9.dp),
     )
+}
+
+/** Подпись и пояснение над полем: так выглядят и поле только для чтения, и поле имени. */
+@Composable
+fun FieldBlock(label: String, helper: String, content: @Composable () -> Unit) {
+    val type = NineTheme.typography
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        BasicText(label, style = type.featureTitle)
+        BasicText(helper, style = type.chatPreview)
+        Spacer(Modifier.height(6.dp))
+        content()
+    }
 }
 
 /** Поле только для чтения с подписью и пояснением. Текст можно выделить и скопировать. */
 @Composable
 fun ReadOnlyField(label: String, helper: String, value: String, action: @Composable () -> Unit = {}) {
     val type = NineTheme.typography
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        BasicText(label, style = type.featureTitle)
-        BasicText(helper, style = type.chatPreview)
-        Spacer(Modifier.height(6.dp))
+    FieldBlock(label, helper) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

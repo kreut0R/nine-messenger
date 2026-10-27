@@ -71,4 +71,9 @@ data class MessengerData(
     val chats: List<Chat> = emptyList(),
     val bubbleColor: BubbleColor = BubbleColor.Forest,
     val settings: AppSettings = AppSettings(),
+    /** Имя, под которым человека будут видеть собеседники. Пустое, пока он его не задал. */
+    val displayName: String = "",
 )
+
+/** Самое длинное имя: дольше в строку списка и в шапку не помещается. */
+const val MaxDisplayNameLength = 40

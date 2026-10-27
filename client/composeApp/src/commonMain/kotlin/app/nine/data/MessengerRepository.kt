@@ -5,6 +5,7 @@ import app.nine.domain.AutoLock
 import app.nine.domain.BubbleColor
 import app.nine.domain.Chat
 import app.nine.domain.ChatId
+import app.nine.domain.MaxDisplayNameLength
 import app.nine.domain.MessengerData
 import app.nine.domain.Message
 import app.nine.domain.TimeSource
@@ -71,6 +72,12 @@ class MessengerRepository(
 
     fun setClearClipboard(clear: Boolean) {
         change { it.copy(settings = it.settings.copy(clearClipboard = clear)) }
+    }
+
+    /** Пробелы по краям обрезаются, слишком длинное имя укорачивается. Пустое имя значит, что имя не задано. */
+    fun setDisplayName(name: String) {
+        val clean = name.trim().take(MaxDisplayNameLength).trimEnd()
+        change { it.copy(displayName = clean) }
     }
 
     private fun changeChat(chatId: ChatId, transform: (Chat) -> Chat): Boolean {

@@ -24,10 +24,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import app.nine.ui.components.Avatar
 import app.nine.ui.components.IconAction
 import app.nine.ui.components.NineIcon
 import app.nine.ui.components.NineIcons
@@ -38,10 +40,12 @@ import app.nine.ui.theme.NineTheme
 
 /**
  * Кнопка профиля в шапке списка чатов и меню, которое она открывает.
+ * @param displayName имя человека, пустое, если он его не задал
  * @param shortCode начало кода аккаунта: по нему видно, под каким аккаунтом человек сидит
  */
 @Composable
 fun ProfileMenuButton(
+    displayName: String,
     shortCode: String,
     onProfile: () -> Unit,
     onSettings: () -> Unit,
@@ -51,7 +55,7 @@ fun ProfileMenuButton(
     var open by remember { mutableStateOf(false) }
     val below = with(LocalDensity.current) { 44.dp.roundToPx() }
     Box {
-        IconAction(NineIcons.Person, "Профиль", onClick = { open = !open }, shape = CircleShape, size = 36.dp)
+        IconAction(NineIcons.Account, "Профиль", onClick = { open = !open }, shape = CircleShape, size = 36.dp)
         if (open) {
             Popup(
                 alignment = Alignment.TopEnd,
@@ -59,7 +63,7 @@ fun ProfileMenuButton(
                 onDismissRequest = { open = false },
                 properties = PopupProperties(focusable = true),
             ) {
-                MenuPanel(shortCode) { choice ->
+                MenuPanel(displayName, shortCode) { choice ->
                     // Меню закрываем до действия: оно может открыть окно поверх.
                     open = false
                     when (choice) {
@@ -77,7 +81,7 @@ fun ProfileMenuButton(
 private enum class MenuChoice { Profile, Settings, Lock, SignOut }
 
 @Composable
-private fun MenuPanel(shortCode: String, onPick: (MenuChoice) -> Unit) {
+private fun MenuPanel(displayName: String, shortCode: String, onPick: (MenuChoice) -> Unit) {
     val type = NineTheme.typography
     Column(
         modifier = Modifier
@@ -93,16 +97,20 @@ private fun MenuPanel(shortCode: String, onPick: (MenuChoice) -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Box(Modifier.size(38.dp).clip(CircleShape).background(NineColors.Control), contentAlignment = Alignment.Center) {
-                NineIcon(NineIcons.Person, tint = NineColors.TextSecondary, size = 20.dp)
+            if (displayName.isBlank()) {
+                Box(Modifier.size(38.dp).clip(CircleShape).background(NineColors.Control), contentAlignment = Alignment.Center) {
+                    NineIcon(NineIcons.Person, tint = NineColors.TextSecondary, size = 20.dp)
+                }
+            } else {
+                Avatar(displayName, seed = shortCode, size = 38.dp)
             }
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                BasicText("Мой аккаунт", style = type.rowTitle)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                BasicText(displayName.ifBlank { "Мой аккаунт" }, style = type.rowTitle, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 BasicText(shortCode, style = type.code)
             }
         }
         Divider()
-        MenuItem(NineIcons.Person, "Профиль") { onPick(MenuChoice.Profile) }
+        MenuItem(NineIcons.PersonCircle, "Профиль") { onPick(MenuChoice.Profile) }
         MenuItem(NineIcons.Sliders, "Настройки") { onPick(MenuChoice.Settings) }
         Divider()
         MenuItem(NineIcons.Lock, "Заблокировать") { onPick(MenuChoice.Lock) }

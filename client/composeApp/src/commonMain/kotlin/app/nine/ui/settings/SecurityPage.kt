@@ -52,7 +52,7 @@ fun SecurityPage(
                     icon = NineIcons.Clock,
                     title = "Автоблокировка",
                     description = settings.autoLock.description,
-                    tone = Tone.Active,
+                    tone = Tone.Blue,
                     below = {
                         Box(Modifier.widthIn(max = 460.dp)) {
                             SegmentedTabs(
@@ -67,7 +67,7 @@ fun SecurityPage(
                     icon = NineIcons.Key,
                     title = "Код доступа",
                     description = "Открывает приложение. Минимум $MinAccessCodeLength символов, лучше фраза из нескольких слов.",
-                    tone = Tone.Active,
+                    tone = Tone.Green,
                 ) { RowButton("Сменить", onClick = { step = SecurityStep.ChangeCode }) }
             }
             SettingsDivider()

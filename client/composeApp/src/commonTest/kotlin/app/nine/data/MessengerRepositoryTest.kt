@@ -5,6 +5,7 @@ import app.nine.domain.AutoLock
 import app.nine.domain.BubbleColor
 import app.nine.domain.ChatId
 import app.nine.domain.Delivery
+import app.nine.domain.MaxDisplayNameLength
 import app.nine.support.FakeTime
 import app.nine.support.InMemoryStore
 import app.nine.support.sequentialIds
@@ -157,6 +158,34 @@ class MessengerRepositoryTest {
         assertEquals(AutoLock.OnMinimize, store.stored.settings.autoLock)
         assertFalse(store.stored.settings.clearClipboard)
         assertEquals("Лис", store.stored.chats.single().title)
+    }
+
+    @Test
+    fun displayNameIsEmptyUntilSetAndIsSavedTrimmed() {
+        assertEquals("", repository.data.value.displayName)
+
+        repository.setDisplayName("  Лис  ")
+
+        assertEquals("Лис", repository.data.value.displayName)
+        assertEquals("Лис", store.stored.displayName)
+    }
+
+    @Test
+    fun displayNameIsCutToTheLimitWithoutTrailingSpace() {
+        repository.setDisplayName("а".repeat(MaxDisplayNameLength - 1) + " " + "б".repeat(10))
+
+        val name = repository.data.value.displayName
+        assertEquals(MaxDisplayNameLength - 1, name.length)
+        assertFalse(name.endsWith(" "))
+    }
+
+    @Test
+    fun blankDisplayNameClearsIt() {
+        repository.setDisplayName("Лис")
+
+        repository.setDisplayName("   ")
+
+        assertEquals("", repository.data.value.displayName)
     }
 
     @Test

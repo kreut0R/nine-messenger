@@ -79,11 +79,13 @@ fun NineApp(
             SettingsScreen(
                 initial = section,
                 settings = data.settings,
+                displayName = data.displayName,
                 session = session,
                 filePicker = filePicker,
                 time = time,
                 onAutoLockChange = repository::setAutoLock,
                 onClearClipboardChange = repository::setClearClipboard,
+                onDisplayNameChange = repository::setDisplayName,
                 onCopy = { text ->
                     scope.launch {
                         if (data.settings.clearClipboard) clipboard.copyTemporarily(text) else clipboard.copy(text)
@@ -105,6 +107,7 @@ fun NineApp(
                             onNewChat = { ui.newChatDialogOpen = true },
                             profileMenu = {
                                 ProfileMenuButton(
+                                    displayName = data.displayName,
                                     shortCode = session.accountId.displayCode.take(ShortCodeLength),
                                     onProfile = { settingsSection = SettingsSection.Profile },
                                     onSettings = { settingsSection = SettingsSection.Security },
