@@ -30,6 +30,8 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 // Нужен, чтобы корутины работали на потоке интерфейса Swing/Skia.
                 implementation(libs.kotlinx.coroutines.swing)
+                // Argon2id для ключа из кода доступа и Ed25519 для ключа входа: в JDK нет ни того, ни другого.
+                implementation(libs.bouncycastle)
             }
         }
     }

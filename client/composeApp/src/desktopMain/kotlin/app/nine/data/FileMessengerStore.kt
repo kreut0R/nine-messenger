@@ -5,7 +5,6 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.io.IOException
-import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
@@ -36,16 +35,9 @@ class FileMessengerStore(directory: File) : MessengerStore {
         }
     }
 
-    /**
-     * Сначала пишем во временный файл и только потом подменяем основной.
-     * Так при сбое посреди записи старый файл остаётся целым, а не превращается в обрубок.
-     */
     override fun save(data: MessengerData) {
         try {
-            file.parentFile.mkdirs()
-            val temp = File(file.parentFile, "${file.name}.tmp")
-            temp.writeText(json.encodeToString(MessengerData.serializer(), data))
-            moveReplacing(temp, file)
+            writeFileAtomically(file, json.encodeToString(MessengerData.serializer(), data).toByteArray())
         } catch (error: IOException) {
             // Падать из-за диска хуже, чем не сохранить: сообщение остаётся на экране. Ошибку видно в консоли.
             System.err.println("Nine: не удалось сохранить данные в $file: ${error.message}")
@@ -60,14 +52,6 @@ class FileMessengerStore(directory: File) : MessengerStore {
             System.err.println("Nine: файл данных не читается, он сохранён как $broken, начинаем с пустого состояния.")
         } catch (error: IOException) {
             System.err.println("Nine: файл данных не читается и не удалось его отложить: ${error.message}")
-        }
-    }
-
-    private fun moveReplacing(from: File, to: File) {
-        try {
-            Files.move(from.toPath(), to.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
-        } catch (error: AtomicMoveNotSupportedException) {
-            Files.move(from.toPath(), to.toPath(), StandardCopyOption.REPLACE_EXISTING)
         }
     }
 }
