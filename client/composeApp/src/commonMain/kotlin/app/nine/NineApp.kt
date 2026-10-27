@@ -45,7 +45,10 @@ private const val ShortCodeLength = 9
 /** Если окно уже этого, правая колонка скрывается, чтобы переписке хватило места. */
 private val ContactPaneMinWindowWidth = 1150.dp
 
-/** Корень интерфейса: три колонки (чаты, переписка, контакт) и окно создания чата поверх них. */
+/**
+ * Корень интерфейса: три колонки (чаты, переписка, контакт) и окно создания чата поверх них.
+ * Настройки занимают всё окно вместо колонок.
+ */
 @Composable
 fun NineApp(
     repository: MessengerRepository,
@@ -69,87 +72,91 @@ fun NineApp(
             selected?.let { repository.markRead(it.id) }
         }
 
-        Box(Modifier.fillMaxSize().background(NineColors.Background)) {
-            BoxWithConstraints(Modifier.fillMaxSize().padding(14.dp)) {
-                val showContactPane = selected != null && ui.contactPaneOpen && maxWidth >= ContactPaneMinWindowWidth
-                Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                    ChatListPane(
-                        chats = filterChats(data.chats, ui.tab, ui.chatSearch),
-                        totalChats = data.chats.size,
-                        ui = ui,
-                        time = time,
-                        onNewChat = { ui.newChatDialogOpen = true },
-                        profileMenu = {
-                            ProfileMenuButton(
-                                shortCode = session.accountId.displayCode.take(ShortCodeLength),
-                                onProfile = { settingsSection = SettingsSection.Profile },
-                                onSettings = { settingsSection = SettingsSection.Security },
-                                onLock = onLock,
-                                onSignOut = { signOutOpen = true },
-                            )
-                        },
-                        modifier = Modifier.fillMaxHeight(),
-                    )
-                    ConversationPane(
-                        chat = selected,
-                        bubbleColor = data.bubbleColor,
-                        ui = ui,
-                        time = time,
-                        onSend = { text ->
-                            val chatId = ui.selectedChatId ?: return@ConversationPane
-                            if (repository.sendMessage(chatId, text)) ui.setDraft(chatId, "")
-                        },
-                        modifier = Modifier.weight(1f).fillMaxHeight(),
-                    )
-                    if (showContactPane && selected != null) {
-                        ContactPane(
-                            chat = selected,
-                            bubbleColor = data.bubbleColor,
-                            messageSearch = ui.messageSearch,
-                            onMessageSearchChange = { ui.messageSearch = it },
-                            onBubbleColorChange = repository::setBubbleColor,
-                            onToggleArchive = {
-                                repository.setArchived(selected.id, !selected.archived)
-                                // Чат ушёл из текущего списка, поэтому закрываем его, а не оставляем «висеть» без строки.
-                                ui.selectChat(null)
+        val section = settingsSection
+        // Настройки это отдельный экран на всё окно, а не слой над чатами: пока они открыты, чаты не рисуются.
+        // Выбранный чат, поиск и черновики лежат в `ui` выше и переживают переход.
+        if (section != null) {
+            SettingsScreen(
+                initial = section,
+                settings = data.settings,
+                session = session,
+                filePicker = filePicker,
+                time = time,
+                onAutoLockChange = repository::setAutoLock,
+                onClearClipboardChange = repository::setClearClipboard,
+                onCopy = { text ->
+                    scope.launch {
+                        if (data.settings.clearClipboard) clipboard.copyTemporarily(text) else clipboard.copy(text)
+                    }
+                },
+                onErase = onErase,
+                onDismiss = { settingsSection = null },
+            )
+        } else {
+            Box(Modifier.fillMaxSize().background(NineColors.Background)) {
+                BoxWithConstraints(Modifier.fillMaxSize().padding(14.dp)) {
+                    val showContactPane = selected != null && ui.contactPaneOpen && maxWidth >= ContactPaneMinWindowWidth
+                    Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                        ChatListPane(
+                            chats = filterChats(data.chats, ui.tab, ui.chatSearch),
+                            totalChats = data.chats.size,
+                            ui = ui,
+                            time = time,
+                            onNewChat = { ui.newChatDialogOpen = true },
+                            profileMenu = {
+                                ProfileMenuButton(
+                                    shortCode = session.accountId.displayCode.take(ShortCodeLength),
+                                    onProfile = { settingsSection = SettingsSection.Profile },
+                                    onSettings = { settingsSection = SettingsSection.Security },
+                                    onLock = onLock,
+                                    onSignOut = { signOutOpen = true },
+                                )
                             },
                             modifier = Modifier.fillMaxHeight(),
                         )
+                        ConversationPane(
+                            chat = selected,
+                            bubbleColor = data.bubbleColor,
+                            ui = ui,
+                            time = time,
+                            onSend = { text ->
+                                val chatId = ui.selectedChatId ?: return@ConversationPane
+                                if (repository.sendMessage(chatId, text)) ui.setDraft(chatId, "")
+                            },
+                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                        )
+                        if (showContactPane && selected != null) {
+                            ContactPane(
+                                chat = selected,
+                                bubbleColor = data.bubbleColor,
+                                messageSearch = ui.messageSearch,
+                                onMessageSearchChange = { ui.messageSearch = it },
+                                onBubbleColorChange = repository::setBubbleColor,
+                                onToggleArchive = {
+                                    repository.setArchived(selected.id, !selected.archived)
+                                    // Чат ушёл из текущего списка, поэтому закрываем его, а не оставляем «висеть» без строки.
+                                    ui.selectChat(null)
+                                },
+                                modifier = Modifier.fillMaxHeight(),
+                            )
+                        }
                     }
                 }
-            }
-            settingsSection?.let { section ->
-                SettingsScreen(
-                    initial = section,
-                    settings = data.settings,
-                    session = session,
-                    filePicker = filePicker,
-                    time = time,
-                    onAutoLockChange = repository::setAutoLock,
-                    onClearClipboardChange = repository::setClearClipboard,
-                    onCopy = { text ->
-                        scope.launch {
-                            if (data.settings.clearClipboard) clipboard.copyTemporarily(text) else clipboard.copy(text)
-                        }
-                    },
-                    onErase = onErase,
-                    onDismiss = { settingsSection = null },
-                )
-            }
-            if (signOutOpen) {
-                SignOutDialog(onErase = onErase, onDismiss = { signOutOpen = false })
-            }
-            if (ui.newChatDialogOpen) {
-                NewChatDialog(
-                    onCreate = { name ->
-                        repository.createChat(name)?.let { id ->
-                            ui.showAllChats()
-                            ui.selectChat(id)
-                        }
-                        ui.newChatDialogOpen = false
-                    },
-                    onDismiss = { ui.newChatDialogOpen = false },
-                )
+                if (signOutOpen) {
+                    SignOutDialog(onErase = onErase, onDismiss = { signOutOpen = false })
+                }
+                if (ui.newChatDialogOpen) {
+                    NewChatDialog(
+                        onCreate = { name ->
+                            repository.createChat(name)?.let { id ->
+                                ui.showAllChats()
+                                ui.selectChat(id)
+                            }
+                            ui.newChatDialogOpen = false
+                        },
+                        onDismiss = { ui.newChatDialogOpen = false },
+                    )
+                }
             }
         }
     }
